@@ -292,10 +292,21 @@ function createCard(record) {
     (record.beforePhotos?.length || 0) +
     (record.feedbackImages?.length || 0);
 
+  // Check if lunch video exists
+  let hasLunchVideo = !!record.lunchCheckoutVideo;
+  if (!hasLunchVideo && record.rawData) {
+    try {
+      const raw = JSON.parse(record.rawData);
+      const lcv = raw.Lunch_Time_Check_Out_Video;
+      if (lcv && typeof lcv === "string" && lcv.length > 0) hasLunchVideo = true;
+    } catch {}
+  }
+
   const displayStatus = statusText.length > 20 ? statusText.substring(0, 18) + "..." : statusText;
 
   const noImgSvg = `<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>`;
   const cameraSvg = `<svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
+  const videoSvg = `<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><polygon points="5,3 19,12 5,21"/></svg>`;
 
   card.innerHTML = `
     <div class="card-image-wrapper">
@@ -304,6 +315,7 @@ function createCard(record) {
            <div class="no-img" style="display:none">${noImgSvg}<span>Failed to load</span></div>`
         : `<div class="no-img">${noImgSvg}<span>No image available</span></div>`}
       ${photoCount > 0 ? `<div class="photo-badge">${cameraSvg} ${photoCount}</div>` : ""}
+      ${hasLunchVideo ? `<div class="video-badge">${videoSvg} Video</div>` : ""}
     </div>
     <div class="card-body">
       <div class="card-status-row">
