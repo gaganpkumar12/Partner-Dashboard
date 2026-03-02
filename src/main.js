@@ -97,6 +97,7 @@ let dateTo = null;
 let selectedPartners = new Set(); // empty = all
 let partnerDropdownOpen = false;
 let pocDropdownOpen = false;
+let partnerStats = {}; // { partnerName: { bookings, reviews, estimates, photos, lunchVideos, eveningVideos, feedbackImages } }
 
 // ─── Lightbox State ───────────────────────────────────────────
 let lightboxImages = [];
@@ -137,6 +138,13 @@ function initSubscriptions() {
 
     buildPartnerDropdown();
     buildPOCDropdown();
+    scheduleRender();
+  });
+
+  // Subscribe to partner stats
+  client.onUpdate(api.bookings.getPartnerStats, {}, (data) => {
+    if (!data) return;
+    partnerStats = data;
     scheduleRender();
   });
 
@@ -266,6 +274,29 @@ function renderBoard() {
   board.appendChild(fragment);
 }
 
+// ─── Partner Stats Badges ─────────────────────────────────────
+function renderStatsBadges(partnerName) {
+  // Case-insensitive lookup in partnerStats
+  const s = partnerStats[partnerName] || Object.entries(partnerStats).find(
+    ([k]) => k.toLowerCase() === partnerName.toLowerCase()
+  )?.[1];
+  if (!s) return '';
+
+  const items = [
+    { icon: '📋', label: 'Bookings', val: s.bookings },
+    { icon: '⭐', label: 'Reviews', val: s.reviews },
+    { icon: '💰', label: 'Estimates', val: s.estimates },
+    { icon: '📷', label: 'Photos', val: s.photos },
+    { icon: '☀️', label: 'Lunch Video', val: s.lunchVideos },
+    { icon: '🌙', label: 'Evening Video', val: s.eveningVideos },
+    { icon: '📝', label: 'Feedback', val: s.feedbackImages },
+  ];
+
+  return `<div class="stats-grid">${items.map(i =>
+    `<span class="stat-item" title="${i.label}"><span class="stat-icon">${i.icon}</span><span class="stat-val${i.val === 0 ? ' zero' : ''}">${i.val}</span></span>`
+  ).join('')}</div>`;
+}
+
 // ─── Create Column ────────────────────────────────────────────
 function createColumn(partnerName, records) {
   const col = document.createElement("div");
@@ -275,8 +306,11 @@ function createColumn(partnerName, records) {
 
   col.innerHTML = `
     <div class="column-header">
-      <span class="partner-name" title="${partnerName}">${partnerName}</span>
-      <span class="count-badge ${records.length === 0 ? "zero" : ""}">${records.length}</span>
+      <div class="column-header-top">
+        <span class="partner-name" title="${partnerName}">${partnerName}</span>
+        <span class="count-badge ${records.length === 0 ? "zero" : ""}">${records.length}</span>
+      </div>
+      ${renderStatsBadges(partnerName)}
     </div>
     <div class="column-body">
       ${records.length === 0 ? `<div class="no-records"><svg viewBox="0 0 24 24"><path d="M20 6H12L10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>No bookings</div>` : ""}
@@ -301,6 +335,17 @@ function updateColumn(col, partnerName, records) {
   if (badge) {
     badge.textContent = records.length;
     badge.className = `count-badge ${records.length === 0 ? "zero" : ""}`;
+  }
+
+  // Update stats badges
+  const oldStats = col.querySelector(".stats-grid");
+  if (oldStats) oldStats.remove();
+  const header = col.querySelector(".column-header");
+  if (header) {
+    const temp = document.createElement("div");
+    temp.innerHTML = renderStatsBadges(partnerName);
+    const newStats = temp.firstElementChild;
+    if (newStats) header.appendChild(newStats);
   }
 
   // If records count changed, rebuild body (fast path: skip if identical count)
@@ -619,8 +664,9 @@ async function loadJobDetails(bookingZohoId) {
       const afterCount = job.afterPhotos?.length || 0;
       const paymentProofCount = job.paymentProofPhotos?.length || 0;
       const feedbackCount = job.feedbackImages?.length || 0;
+      const reviewCount = job.googleReviewPhotos?.length || 0;
       const videoExists = !!job.eveningCheckoutVideo;
-      const jobPhotoCount = afterCount + paymentProofCount + feedbackCount;
+      const jobPhotoCount = afterCount + paymentProofCount + feedbackCount + reviewCount;
 
       jobHtml += `<div class="job-section">`;
       jobHtml += `<div class="job-section-header">
@@ -642,6 +688,9 @@ async function loadJobDetails(bookingZohoId) {
             <div class="gallery-tab ${defaultJobTab === "job-feedback2" ? "active" : ""}" data-tab="job-feedback2" data-job-idx="${idx}" onclick="switchJobGalleryTab('job-feedback2', ${idx}, this)">
               Feedback 2 <span class="tab-count">${feedbackCount}</span>
             </div>
+            ${reviewCount > 0 ? `<div class="gallery-tab" data-tab="job-review" data-job-idx="${idx}" onclick="switchJobGalleryTab('job-review', ${idx}, this)">
+              Google Review <span class="tab-count">${reviewCount}</span>
+            </div>` : ""}
             ${videoExists ? `<div class="gallery-tab" data-tab="job-video" data-job-idx="${idx}" onclick="switchJobGalleryTab('job-video', ${idx}, this)">
               Evening Video <span class="tab-count">1</span>
             </div>` : ""}
@@ -738,6 +787,7 @@ function renderJobGallery(tab, jobIdx) {
   if (tab === "job-after") photos = job.afterPhotos || [];
   else if (tab === "job-proof") photos = job.paymentProofPhotos || [];
   else if (tab === "job-feedback2") photos = job.feedbackImages || [];
+  else if (tab === "job-review") photos = job.googleReviewPhotos || [];
   else if (tab === "job-video") {
     if (job.eveningCheckoutVideo) {
       renderVideoPlayer(grid, job.eveningCheckoutVideo);
@@ -784,6 +834,7 @@ window.openJobLightbox = function (jobIdx, tab, index) {
   if (tab === "job-after") photos = job.afterPhotos || [];
   else if (tab === "job-proof") photos = job.paymentProofPhotos || [];
   else if (tab === "job-feedback2") photos = job.feedbackImages || [];
+  else if (tab === "job-review") photos = job.googleReviewPhotos || [];
 
   lightboxImages = photos.map(proxyImageUrl);
   lightboxIndex = index;
@@ -1230,11 +1281,12 @@ window.exportCSV = async function () {
             (job.afterPhotos || []).length,
             (job.paymentProofPhotos || []).length,
             (job.feedbackImages || []).length,
+            (job.googleReviewPhotos || []).length,
             job.eveningCheckoutVideo ? "Yes" : "No"
           );
         } else {
           // Empty cells for this job slot
-          jobCells.push("", "", "", "", "", "", "", "", "", "", "");
+          jobCells.push("", "", "", "", "", "", "", "", "", "", "", "");
         }
       }
 

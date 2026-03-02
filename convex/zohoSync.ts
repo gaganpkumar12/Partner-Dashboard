@@ -264,6 +264,7 @@ function parseJobRecord(record: any) {
     afterPhotos: extractUrls(record.After_Photos),
     feedbackImages: extractUrls(record.Feedback_Form_2_Image),
     paymentProofPhotos: extractUrls(record.Payment_Proof_Photo),
+    googleReviewPhotos: extractUrls(record.Google_Review_Photo),
     eveningCheckoutVideo: (() => {
       const v = record.Evening_Check_out_Video;
       if (!v) return "";

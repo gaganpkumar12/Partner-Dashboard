@@ -35,6 +35,7 @@ export default defineSchema({
     afterPhotos: v.array(v.string()), // After_Photos URLs
     feedbackImages: v.array(v.string()), // Feedback_Form_2_Image URLs
     paymentProofPhotos: v.array(v.string()), // Payment_Proof_Photo URLs
+    googleReviewPhotos: v.optional(v.array(v.string())), // Google_Review_Photo URLs
     eveningCheckoutVideo: v.string(), // Evening_Check_out_Video URL
     addOns: v.string(),               // Add_ons JSON
     rawData: v.string(),              // Full JSON

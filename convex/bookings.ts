@@ -116,3 +116,50 @@ export const getAllJobs = query({
     return await ctx.db.query("jobs").collect();
   },
 });
+
+// Per-partner statistics (booking + job counts)
+export const getPartnerStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const allBookings = await ctx.db.query("bookings").collect();
+    const allJobs = await ctx.db.query("jobs").collect();
+
+    // Build booking-zohoId -> partnerName map & jobs lookup by bookingId
+    const bookingPartnerMap: Record<string, string> = {};
+    const stats: Record<string, {
+      bookings: number;
+      reviews: number;
+      estimates: number;
+      photos: number;
+      lunchVideos: number;
+      eveningVideos: number;
+      feedbackImages: number;
+    }> = {};
+
+    const ensure = (name: string) => {
+      if (!stats[name]) stats[name] = { bookings: 0, reviews: 0, estimates: 0, photos: 0, lunchVideos: 0, eveningVideos: 0, feedbackImages: 0 };
+    };
+
+    // Count booking-level stats
+    for (const b of allBookings) {
+      const partner = b.partnerName.trim();
+      bookingPartnerMap[b.zohoId] = partner;
+      ensure(partner);
+      stats[partner].bookings++;
+      if (b.lunchCheckoutVideo) stats[partner].lunchVideos++;
+    }
+
+    // Count job-level stats
+    for (const j of allJobs) {
+      const partner = bookingPartnerMap[j.bookingId] || j.portalUsers.trim();
+      ensure(partner);
+      if (j.googleReviewPhotos && j.googleReviewPhotos.length > 0) stats[partner].reviews++;
+      if (j.amount && j.amount.trim() !== "" && j.amount !== "0") stats[partner].estimates++;
+      if (j.afterPhotos && j.afterPhotos.length > 0) stats[partner].photos++;
+      if (j.eveningCheckoutVideo) stats[partner].eveningVideos++;
+      if (j.feedbackImages && j.feedbackImages.length > 0) stats[partner].feedbackImages++;
+    }
+
+    return stats;
+  },
+});
