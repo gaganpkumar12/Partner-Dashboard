@@ -210,6 +210,15 @@ export const syncFromZoho = action({
       });
 
       console.log(`[Sync] Complete! ${totalUpserted} records synced.`);
+
+      // Also sync jobs in the background
+      try {
+        console.log("[Sync] Now syncing jobs...");
+        await ctx.runAction(api.zohoSync.syncJobsFromZoho, {});
+      } catch (jobErr: any) {
+        console.error("[Sync] Jobs sync failed (bookings still OK):", jobErr.message);
+      }
+
       return { success: true, total: totalUpserted };
     } catch (error: any) {
       console.error("[Sync] Error:", error.message);
