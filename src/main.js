@@ -22,6 +22,60 @@ function proxyImageUrl(url) {
   return url;
 }
 
+// ─── Video Player (lazy click-to-play) ────────────────────────
+function renderVideoPlayer(container, rawUrl) {
+  const proxied = proxyImageUrl(rawUrl);
+  container.innerHTML = `
+    <div class="video-section">
+      <div class="video-player-wrapper" id="videoPlayerWrapper">
+        <div class="video-poster" id="videoPoster" style="cursor:pointer">
+          <div class="video-play-btn">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>
+          <div class="video-poster-label">Click to load &amp; play video</div>
+        </div>
+        <div class="video-loading-spinner" id="videoSpinner" style="display:none">
+          <div class="loader" style="width:32px;height:32px;border-width:3px;"></div>
+          <span style="font-size:12px;color:var(--text-muted);margin-top:8px;">Loading video...</span>
+        </div>
+        <video id="videoElement" controls preload="none" style="display:none;max-width:100%;max-height:300px;border-radius:var(--radius-md);background:#000;"></video>
+      </div>
+      <div style="margin-top:8px;"><a href="${proxied}" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Open in new tab
+      </a></div>
+    </div>`;
+
+  const poster = container.querySelector("#videoPoster");
+  const spinner = container.querySelector("#videoSpinner");
+  const videoEl = container.querySelector("#videoElement");
+
+  poster.addEventListener("click", () => {
+    poster.style.display = "none";
+    spinner.style.display = "flex";
+    videoEl.src = proxied;
+    videoEl.load();
+  });
+
+  videoEl.addEventListener("canplay", () => {
+    spinner.style.display = "none";
+    videoEl.style.display = "block";
+    videoEl.play().catch(() => {});
+  });
+
+  videoEl.addEventListener("error", () => {
+    spinner.style.display = "none";
+    poster.style.display = "none";
+    const wrapper = container.querySelector("#videoPlayerWrapper");
+    if (wrapper) {
+      wrapper.innerHTML = `<div class="gallery-empty" style="padding:24px;">
+        <div style="font-size:14px;margin-bottom:8px;">⚠️ Video failed to load</div>
+        <div style="font-size:11px;color:var(--text-muted);">Try opening in a new tab instead</div>
+      </div>`;
+    }
+  });
+}
+
 // ─── State ────────────────────────────────────────────────────
 let allData = {};
 let partners = [];
@@ -481,14 +535,7 @@ function renderGalleryTab() {
   if (currentGalleryTab === "lunch-video") {
     const videoUrl = record._lunchVideoUrl || record.lunchCheckoutVideo;
     if (videoUrl) {
-      const proxied = proxyImageUrl(videoUrl);
-      grid.innerHTML = `<div class="video-section">
-        <video src="${proxied}" controls preload="metadata"></video>
-        <div style="margin-top:8px;"><a href="${proxied}" target="_blank" rel="noopener">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Open in new tab
-        </a></div>
-      </div>`;
+      renderVideoPlayer(grid, videoUrl);
     } else {
       grid.innerHTML = `<div class="gallery-empty">No video available</div>`;
     }
@@ -673,14 +720,7 @@ function renderJobGallery(tab, jobIdx) {
   else if (tab === "job-feedback2") photos = job.feedbackImages || [];
   else if (tab === "job-video") {
     if (job.eveningCheckoutVideo) {
-      const proxied = proxyImageUrl(job.eveningCheckoutVideo);
-      grid.innerHTML = `<div class="video-section">
-        <video src="${proxied}" controls preload="metadata"></video>
-        <div style="margin-top:8px;"><a href="${proxied}" target="_blank" rel="noopener">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Open in new tab
-        </a></div>
-      </div>`;
+      renderVideoPlayer(grid, job.eveningCheckoutVideo);
     } else {
       grid.innerHTML = `<div class="gallery-empty">No video available</div>`;
     }

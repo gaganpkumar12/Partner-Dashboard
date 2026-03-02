@@ -60,27 +60,48 @@ http.route({
     try {
       const accessToken = await getAccessTokenCached(ctx);
 
-      const response = await fetch(imageUrl, {
-        headers: {
-          Authorization: `Zoho-oauthtoken ${accessToken}`,
-        },
-      });
+      // Forward Range header for video seeking support
+      const reqHeaders: Record<string, string> = {
+        Authorization: `Zoho-oauthtoken ${accessToken}`,
+      };
+      const rangeHeader = request.headers.get("Range");
+      if (rangeHeader) {
+        reqHeaders["Range"] = rangeHeader;
+      }
 
-      if (!response.ok) {
+      const response = await fetch(imageUrl, { headers: reqHeaders });
+
+      if (!response.ok && response.status !== 206) {
         console.error(`Image proxy failed: ${response.status} for ${imageUrl}`);
         return new Response("Failed to fetch image", { status: 502 });
       }
 
       const contentType = response.headers.get("content-type") || "application/octet-stream";
-      const data = await response.arrayBuffer();
+      const isVideo = contentType.startsWith("video/");
 
-      return new Response(data, {
-        status: 200,
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": "public, max-age=3600",
-          "Access-Control-Allow-Origin": "*",
-        },
+      // Build response headers
+      const resHeaders: Record<string, string> = {
+        "Content-Type": contentType,
+        "Cache-Control": isVideo ? "public, max-age=86400" : "public, max-age=3600",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges",
+      };
+
+      // Forward content-length so browser can show progress & enable seeking
+      const contentLength = response.headers.get("content-length");
+      if (contentLength) resHeaders["Content-Length"] = contentLength;
+
+      // Forward range-related headers for video seeking
+      const contentRange = response.headers.get("content-range");
+      if (contentRange) resHeaders["Content-Range"] = contentRange;
+      const acceptRanges = response.headers.get("accept-ranges");
+      if (acceptRanges) resHeaders["Accept-Ranges"] = acceptRanges;
+
+      // Stream the body directly instead of buffering into memory
+      // This allows video playback to start before the full file is downloaded
+      return new Response(response.body, {
+        status: response.status, // preserves 206 for range requests
+        headers: resHeaders,
       });
     } catch (error: any) {
       console.error("Image proxy error:", error.message);

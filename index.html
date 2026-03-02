@@ -475,6 +475,32 @@
       text-decoration: none; transition: background 0.15s, color 0.15s;
     }
     .video-section a:hover { background: var(--accent); color: #fff; }
+    .video-player-wrapper {
+      position: relative; min-height: 180px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .video-poster {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      width: 100%; min-height: 180px; border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #1a1d2e, #2d3040);
+      transition: background 0.2s;
+    }
+    .video-poster:hover { background: linear-gradient(135deg, #22252f, #3d4055); }
+    .video-play-btn {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(99,102,241,0.85); display: flex;
+      align-items: center; justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .video-poster:hover .video-play-btn { transform: scale(1.1); background: rgba(99,102,241,1); }
+    .video-poster-label {
+      margin-top: 12px; font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,0.7);
+    }
+    .video-loading-spinner {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 180px;
+    }
 
     @media (max-width: 768px) {
       .column { min-width: 220px; max-width: 220px; }
