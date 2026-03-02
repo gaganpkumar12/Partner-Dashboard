@@ -77,14 +77,26 @@ function renderVideoPlayer(container, rawUrl) {
 }
 
 // ─── State ────────────────────────────────────────────────────
+// ─── POC (Point of Contact) → Partners Mapping ───────────────
+const POC_MAP = {
+  "Nilesh": ["Abdul Kalam","Alameen","Aslam","Bilal","Hasan Charlie","Jamal","Kudus","Masum","Munna","Rahim","Rana Khan","Sojib","Sohag Khan","BK-Riyazul","BK-Rubel","Rishu","Quem","Maxwillam Narzary","Farhan Ahmed","Khobirul"],
+  "Bishal": ["Dulal Khan","Harun","Hasib","Hirak Mondal","Ibrahim","Maharaj","Mehadi Hasan","Ranjith","Salim 2","Salim","Umesh","Zamal Khan","BK-Babu Reddy","Munir Khan BK","BK Rameez","Masum Howldar","Mijan New","Hasib Sheikh","Michu Laskar","Saidul Babu"],
+  "Vineet": ["Gouse","Mohammed Alamgir Mondal","Bilal Mk","Md. Rajib","Mizan","Sahin","Sameer","Kausik Barman","Zakir Hussian","BK-Beelal","BK-Forkan","BK-Nasir Sheikh","Vivek Painter","mukesh yadav","Sourav Painter","Pradumn Painter","Kumar Painter","Prem Shankar Painter","Anil","Bikas"],
+  "Vishal Singh": ["Hasan New","Hirendra","Abir","Melon Rizwan","Nasir","Rajibul","Ridoy","Sagar Khan","Sujan","Usuf","Yunus Khan","BK-Rafikul","Kohli"],
+  "Mohith": ["MD Tuhin","Rofikul Islam","Abdur rahim","Zakir","BK Naeem","Alameen New FHC","Md. Raju","BK-Ebadul","Sohel","Suman","Shiva","Jakir Hussian2","Alameen BK New"]
+};
+const POC_NAMES = Object.keys(POC_MAP);
+
 let allData = {};
 let partners = [];
 let currentFilter = "all";
 let currentStatusFilter = null;
+let currentPOCFilter = null; // null = all POCs
 let dateFrom = null;
 let dateTo = null;
 let selectedPartners = new Set(); // empty = all
 let partnerDropdownOpen = false;
+let pocDropdownOpen = false;
 
 // ─── Lightbox State ───────────────────────────────────────────
 let lightboxImages = [];
@@ -124,6 +136,7 @@ function initSubscriptions() {
     document.getElementById("refreshBtn").disabled = false;
 
     buildPartnerDropdown();
+    buildPOCDropdown();
     scheduleRender();
   });
 
@@ -185,6 +198,13 @@ function renderBoard() {
   // Partner multi-select filter
   if (selectedPartners.size > 0) {
     filteredPartners = filteredPartners.filter((p) => selectedPartners.has(p));
+  }
+
+  // POC filter
+  if (currentPOCFilter) {
+    const pocPartners = POC_MAP[currentPOCFilter] || [];
+    const pocSet = new Set(pocPartners.map(n => n.toLowerCase()));
+    filteredPartners = filteredPartners.filter((p) => pocSet.has(p.toLowerCase()));
   }
 
   // Build a map of what we need: partner -> filtered records
@@ -853,6 +873,66 @@ window.setStatusFilter = function (filter, chip) {
   scheduleRender();
 };
 
+// ─── POC Filter Dropdown ──────────────────────────────────────
+function buildPOCDropdown() {
+  const list = document.getElementById("pocDropdownList");
+  if (!list) return;
+
+  list.innerHTML = `<div class="poc-option ${!currentPOCFilter ? 'active' : ''}" onclick="setPOCFilter(null)">
+    <span class="poc-name">All POCs</span>
+  </div>` + POC_NAMES.map(name => {
+    const count = POC_MAP[name].length;
+    return `<div class="poc-option ${currentPOCFilter === name ? 'active' : ''}" onclick="setPOCFilter('${name}')">
+      <span class="poc-name">${name}</span>
+      <span class="poc-count">${count}</span>
+    </div>`;
+  }).join("");
+}
+
+window.setPOCFilter = function (pocName) {
+  currentPOCFilter = pocName;
+  const trigger = document.getElementById("pocDropdownTrigger");
+  const textEl = trigger.querySelector(".trigger-text");
+  textEl.textContent = pocName || "All POCs";
+
+  // Also reset partner filter when changing POC
+  selectedPartners.clear();
+  buildPartnerDropdown();
+  buildPOCDropdown();
+
+  // Close dropdown
+  pocDropdownOpen = false;
+  document.getElementById("pocDropdownPanel").classList.remove("open");
+  trigger.classList.remove("open");
+
+  scheduleRender();
+};
+
+window.togglePOCDropdown = function () {
+  pocDropdownOpen = !pocDropdownOpen;
+  const panel = document.getElementById("pocDropdownPanel");
+  const trigger = document.getElementById("pocDropdownTrigger");
+  if (pocDropdownOpen) {
+    panel.classList.add("open");
+    trigger.classList.add("open");
+  } else {
+    panel.classList.remove("open");
+    trigger.classList.remove("open");
+  }
+};
+
+// Close POC dropdown when clicking outside
+document.addEventListener("click", (e) => {
+  if (pocDropdownOpen) {
+    const wrapper = document.getElementById("pocDropdownWrapper");
+    if (!wrapper.contains(e.target)) {
+      pocDropdownOpen = false;
+      document.getElementById("pocDropdownPanel").classList.remove("open");
+      document.getElementById("pocDropdownTrigger").classList.remove("open");
+    }
+  }
+});
+
 // ─── Date Filter ──────────────────────────────────────────────
 window.applyDateFilter = function () {
   dateFrom = document.getElementById("dateFrom").value || null;
@@ -1018,6 +1098,11 @@ window.exportCSV = async function () {
     }
     if (selectedPartners.size > 0) {
       filteredPartners = filteredPartners.filter((p) => selectedPartners.has(p));
+    }
+    if (currentPOCFilter) {
+      const pocPartners = POC_MAP[currentPOCFilter] || [];
+      const pocSet = new Set(pocPartners.map(n => n.toLowerCase()));
+      filteredPartners = filteredPartners.filter((p) => pocSet.has(p.toLowerCase()));
     }
 
     // Collect all displayed records

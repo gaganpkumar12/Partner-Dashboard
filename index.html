@@ -233,6 +233,34 @@
     .partner-option .p-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .partner-option .p-count { font-size: 10px; font-weight: 600; color: var(--text-muted); background: var(--surface-hover); padding: 1px 6px; border-radius: 8px; }
 
+    /* ─── POC Dropdown ─────────────────────────────────────── */
+    .poc-dropdown-wrapper { position: relative; }
+    .poc-dropdown-trigger {
+      padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 500; cursor: pointer; background: var(--surface);
+      color: var(--text-primary); display: flex; align-items: center; gap: 6px;
+      min-width: 140px; max-width: 200px; transition: border-color 0.15s; font-family: inherit;
+    }
+    .poc-dropdown-trigger:hover, .poc-dropdown-trigger.open {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    .poc-dropdown-trigger.open .trigger-arrow { transform: rotate(180deg); }
+    .poc-dropdown-panel {
+      position: absolute; top: calc(100% + 4px); left: 0; width: 220px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); z-index: 500; display: none; flex-direction: column; overflow: hidden;
+    }
+    .poc-dropdown-panel.open { display: flex; }
+    .poc-option {
+      display: flex; align-items: center; justify-content: space-between; padding: 9px 14px;
+      cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.1s;
+      color: var(--text-primary);
+    }
+    .poc-option:hover { background: var(--accent-light); }
+    .poc-option.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+    .poc-name { flex: 1; }
+    .poc-count { font-size: 10px; font-weight: 600; color: var(--text-muted); background: var(--surface-hover); padding: 1px 6px; border-radius: 8px; }
+
     /* ─── Search Box ──────────────────────────────────────── */
     .search-input {
       padding: 7px 12px 7px 32px; border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -540,6 +568,7 @@
       .chip { padding: 4px 10px; font-size: 11px; }
       .date-input { width: 110px; font-size: 11px; }
       .partner-dropdown-trigger { min-width: 140px; max-width: 100%; }
+      .poc-dropdown-trigger { min-width: 120px; max-width: 100%; }
       .partner-dropdown-panel { width: calc(100vw - 24px); left: auto; right: 0; }
 
       .board-container {
@@ -663,6 +692,19 @@
       <span class="date-separator">to</span>
       <input type="date" class="date-input" id="dateTo" onchange="applyDateFilter()">
       <button class="clear-dates-btn" id="clearDatesBtn" onclick="clearDateFilter()" style="display:none;">Clear</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">POC:</span>
+      <div class="poc-dropdown-wrapper" id="pocDropdownWrapper">
+        <button class="poc-dropdown-trigger" id="pocDropdownTrigger" onclick="togglePOCDropdown()">
+          <span class="trigger-text">All POCs</span>
+          <span class="trigger-arrow">▼</span>
+        </button>
+        <div class="poc-dropdown-panel" id="pocDropdownPanel">
+          <div class="poc-dropdown-list" id="pocDropdownList"></div>
+        </div>
+      </div>
     </div>
     <div class="filter-divider"></div>
     <div class="filter-group">
