@@ -1129,7 +1129,7 @@ window.filterPartners = function () {
   scheduleRender();
 };
 
-// ─── CSV Export ───────────────────────────────────────────────
+// ─── CSV Export (Partner Summary) ─────────────────────────────
 window.exportCSV = async function () {
   const btn = document.getElementById("exportBtn");
   btn.disabled = true;
@@ -1156,56 +1156,28 @@ window.exportCSV = async function () {
       filteredPartners = filteredPartners.filter((p) => pocSet.has(p.toLowerCase()));
     }
 
-    // Collect all displayed records
-    const bookings = [];
-    filteredPartners.forEach((partner) => {
-      let records = allData[partner] || [];
+    // Only partners with bookings
+    filteredPartners = filteredPartners.filter((p) => (allData[p]?.length || 0) > 0);
 
-      if (currentStatusFilter) {
-        records = records.filter((r) => getStatusClass(r) === currentStatusFilter);
-      }
-
-      if (dateFrom || dateTo) {
-        records = records.filter((r) => {
-          if (!r.addedTime) return false;
-          const d = new Date(r.addedTime);
-          if (isNaN(d.getTime())) return false;
-          const dateStr = d.toISOString().split("T")[0];
-          if (dateFrom && dateStr < dateFrom) return false;
-          if (dateTo && dateStr > dateTo) return false;
-          return true;
-        });
-      }
-
-      records.forEach((r) => bookings.push(r));
-    });
-
-    if (bookings.length === 0) {
-      alert("No records to export with current filters.");
+    if (filteredPartners.length === 0) {
+      alert("No partners to export with current filters.");
       return;
     }
 
     // Fetch ALL jobs in one query and group by bookingId
-    const jobsMap = {};
+    const jobsByBookingId = {};
     try {
       const allJobs = await client.query(api.bookings.getAllJobs, {});
       if (allJobs && allJobs.length > 0) {
         for (const job of allJobs) {
           if (!job.bookingId) continue;
-          if (!jobsMap[job.bookingId]) jobsMap[job.bookingId] = [];
-          jobsMap[job.bookingId].push(job);
+          if (!jobsByBookingId[job.bookingId]) jobsByBookingId[job.bookingId] = [];
+          jobsByBookingId[job.bookingId].push(job);
         }
       }
-      console.log(`[CSV Export] Fetched ${allJobs?.length || 0} jobs, matched to ${Object.keys(jobsMap).length} bookings`);
+      console.log(`[CSV Export] Fetched ${allJobs?.length || 0} jobs`);
     } catch (err) {
       console.error("[CSV Export] Failed to fetch jobs:", err);
-    }
-
-    // Build CSV rows — one row per booking, with job columns appended
-    // Find max number of jobs across all bookings for column headers
-    let maxJobs = 0;
-    for (const key in jobsMap) {
-      if (jobsMap[key].length > maxJobs) maxJobs = jobsMap[key].length;
     }
 
     function escapeCSV(val) {
@@ -1217,82 +1189,83 @@ window.exportCSV = async function () {
       return str;
     }
 
-    // Build headers
-    const bookingHeaders = [
-      "Partner Name", "Status", "Phone Number", "Admin Note", "Added Time",
-      "Rating", "Reached Selfie Count", "Before Photos Count", "Feedback Images Count",
-      "Has Lunch Video", "Booking ID"
+    // Build partner summary — one row per partner
+    const headers = [
+      "Partner Name",
+      "Count of Bookings",
+      "Count of Review Photos",
+      "Count of Estimate",
+      "Count of Photos",
+      "Count of Lunch Time Video",
+      "Count of Evening Time Video",
+      "Count of Feedback Images"
     ];
 
-    const jobHeaders = [];
-    for (let j = 0; j < maxJobs; j++) {
-      const prefix = maxJobs > 1 ? `Job ${j + 1} ` : "Job ";
-      jobHeaders.push(
-        `${prefix}Portal User`, `${prefix}Amount`, `${prefix}Payment Mode`,
-        `${prefix}Added Time`, `${prefix}Added By`, `${prefix}Admin Note`,
-        `${prefix}Add-ons`, `${prefix}After Photos Count`,
-        `${prefix}Payment Proof Count`, `${prefix}Feedback Count`,
-        `${prefix}Has Evening Video`
-      );
-    }
-
-    const headers = [...bookingHeaders, ...jobHeaders];
     let csv = headers.map(escapeCSV).join(",") + "\n";
 
-    bookings.forEach((r) => {
-      // Check lunch video
-      let hasLunchVideo = !!r.lunchCheckoutVideo;
-      if (!hasLunchVideo && r.rawData) {
-        try {
-          const raw = JSON.parse(r.rawData);
-          const lcv = raw.Lunch_Time_Check_Out_Video;
-          if (lcv && typeof lcv === "string" && lcv.length > 0) hasLunchVideo = true;
-        } catch {}
+    let totalBookings = 0, totalReviews = 0, totalEstimates = 0;
+    let totalPhotos = 0, totalLunch = 0, totalEvening = 0, totalFeedback = 0;
+
+    filteredPartners.forEach((partner) => {
+      let records = allData[partner] || [];
+
+      if (currentStatusFilter) {
+        records = records.filter((r) => getStatusClass(r) === currentStatusFilter);
       }
+      if (dateFrom || dateTo) {
+        records = records.filter((r) => {
+          if (!r.addedTime) return false;
+          const d = new Date(r.addedTime);
+          if (isNaN(d.getTime())) return false;
+          const dateStr = d.toISOString().split("T")[0];
+          if (dateFrom && dateStr < dateFrom) return false;
+          if (dateTo && dateStr > dateTo) return false;
+          return true;
+        });
+      }
+      if (records.length === 0) return;
 
-      const bookingRow = [
-        r.partnerName,
-        r.status,
-        r.phoneNumber,
-        (r.adminNote || "").replace(/\n/g, " ").replace(/\r/g, ""),
-        r.addedTime,
-        r.rating,
-        (r.reachedSelfie || []).length,
-        (r.beforePhotos || []).length,
-        (r.feedbackImages || []).length,
-        hasLunchVideo ? "Yes" : "No",
-        r.zohoId,
-      ];
+      let countBookings = records.length;
+      let countLunchVideo = 0;
+      const partnerJobs = [];
 
-      // Append job columns
-      const jobs = jobsMap[r.zohoId] || [];
-      const jobCells = [];
-      for (let j = 0; j < maxJobs; j++) {
-        const job = jobs[j];
-        if (job) {
-          jobCells.push(
-            job.portalUsers || "",
-            job.amount || "",
-            job.paymentMode || "",
-            job.addedTime || "",
-            job.addedUser || "",
-            (job.adminNote || "").replace(/\n/g, " ").replace(/\r/g, ""),
-            job.addOns || "",
-            (job.afterPhotos || []).length,
-            (job.paymentProofPhotos || []).length,
-            (job.feedbackImages || []).length,
-            (job.googleReviewPhotos || []).length,
-            job.eveningCheckoutVideo ? "Yes" : "No"
-          );
-        } else {
-          // Empty cells for this job slot
-          jobCells.push("", "", "", "", "", "", "", "", "", "", "", "");
+      records.forEach((r) => {
+        let hasLunch = !!r.lunchCheckoutVideo;
+        if (!hasLunch && r.rawData) {
+          try {
+            const raw = JSON.parse(r.rawData);
+            const lcv = raw.Lunch_Time_Check_Out_Video;
+            if (lcv && typeof lcv === "string" && lcv.length > 0) hasLunch = true;
+          } catch {}
         }
-      }
+        if (hasLunch) countLunchVideo++;
+        const jobs = jobsByBookingId[r.zohoId] || [];
+        partnerJobs.push(...jobs);
+      });
 
-      const row = [...bookingRow, ...jobCells];
-      csv += row.map(escapeCSV).join(",") + "\n";
+      let countReviews = 0, countEstimates = 0, countPhotos = 0;
+      let countEvening = 0, countFeedback = 0;
+      partnerJobs.forEach((job) => {
+        if (job.googleReviewPhotos && job.googleReviewPhotos.length > 0) countReviews++;
+        if (job.amount && job.amount.trim() !== "" && job.amount !== "0") countEstimates++;
+        if (job.afterPhotos && job.afterPhotos.length > 0) countPhotos++;
+        if (job.eveningCheckoutVideo) countEvening++;
+        if (job.feedbackImages && job.feedbackImages.length > 0) countFeedback++;
+      });
+
+      totalBookings += countBookings;
+      totalReviews += countReviews;
+      totalEstimates += countEstimates;
+      totalPhotos += countPhotos;
+      totalLunch += countLunchVideo;
+      totalEvening += countEvening;
+      totalFeedback += countFeedback;
+
+      csv += [partner, countBookings, countReviews, countEstimates, countPhotos, countLunchVideo, countEvening, countFeedback].map(escapeCSV).join(",") + "\n";
     });
+
+    // Grand Total row
+    csv += ["Grand Total", totalBookings, totalReviews, totalEstimates, totalPhotos, totalLunch, totalEvening, totalFeedback].map(escapeCSV).join(",") + "\n";
 
     // Download
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -1300,7 +1273,7 @@ window.exportCSV = async function () {
     const a = document.createElement("a");
     a.href = url;
     const dateStr = new Date().toISOString().split("T")[0];
-    a.download = `bookings_export_${dateStr}.csv`;
+    a.download = `partner_summary_${dateStr}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
