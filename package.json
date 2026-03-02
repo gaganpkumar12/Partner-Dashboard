@@ -1,0 +1,19 @@
+{
+  "name": "partners-admin-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx convex dev & npx vite",
+    "dev:frontend": "npx vite",
+    "dev:backend": "npx convex dev",
+    "build": "npx vite build",
+    "preview": "npx vite preview"
+  },
+  "dependencies": {
+    "convex": "^1.17.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
