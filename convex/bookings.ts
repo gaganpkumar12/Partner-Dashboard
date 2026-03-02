@@ -108,3 +108,11 @@ export const getJobsByBookingId = query({
       .collect();
   },
 });
+
+// Get ALL jobs (for CSV export — avoids hundreds of individual queries)
+export const getAllJobs = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("jobs").collect();
+  },
+});

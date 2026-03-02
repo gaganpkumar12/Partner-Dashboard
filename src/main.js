@@ -1049,17 +1049,21 @@ window.exportCSV = async function () {
       return;
     }
 
-    // Fetch jobs for all bookings in parallel
+    // Fetch ALL jobs in one query and group by bookingId
     const jobsMap = {};
-    const jobPromises = bookings.map(async (b) => {
-      try {
-        const jobs = await client.query(api.bookings.getJobsByBookingId, { bookingId: b.zohoId });
-        if (jobs && jobs.length > 0) {
-          jobsMap[b.zohoId] = jobs;
+    try {
+      const allJobs = await client.query(api.bookings.getAllJobs, {});
+      if (allJobs && allJobs.length > 0) {
+        for (const job of allJobs) {
+          if (!job.bookingId) continue;
+          if (!jobsMap[job.bookingId]) jobsMap[job.bookingId] = [];
+          jobsMap[job.bookingId].push(job);
         }
-      } catch {}
-    });
-    await Promise.all(jobPromises);
+      }
+      console.log(`[CSV Export] Fetched ${allJobs?.length || 0} jobs, matched to ${Object.keys(jobsMap).length} bookings`);
+    } catch (err) {
+      console.error("[CSV Export] Failed to fetch jobs:", err);
+    }
 
     // Build CSV rows — one row per booking, with job columns appended
     // Find max number of jobs across all bookings for column headers
