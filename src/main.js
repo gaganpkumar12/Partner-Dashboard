@@ -1422,5 +1422,38 @@ window.toggleDarkMode = function () {
   animate();
 })();
 
+// ─── Magnetize Particles (Export Button) ──────────────────────
+(function initMagnetizeParticles() {
+  const container = document.getElementById("magnetizeParticles");
+  if (!container) return;
+
+  const PARTICLE_COUNT = 14;
+  const particles = [];
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const dot = document.createElement("div");
+    dot.className = "magnetize-particle";
+    // Random scatter positions around the button
+    const x = (Math.random() - 0.5) * 160;
+    const y = (Math.random() - 0.5) * 120;
+    dot.style.transform = `translate(${x}px, ${y}px)`;
+    dot.dataset.homeX = String(x);
+    dot.dataset.homeY = String(y);
+    container.appendChild(dot);
+    particles.push(dot);
+  }
+
+  // On mouseenter, CSS handles attraction via :hover selector
+  // On mouseleave, restore scattered positions
+  const btn = container.closest(".btn-export");
+  if (!btn) return;
+
+  btn.addEventListener("mouseleave", () => {
+    particles.forEach((dot) => {
+      dot.style.transform = `translate(${dot.dataset.homeX}px, ${dot.dataset.homeY}px)`;
+    });
+  });
+})();
+
 // ─── Init ─────────────────────────────────────────────────────
 initSubscriptions();
