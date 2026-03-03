@@ -29,10 +29,12 @@
       --card-img-gradient: linear-gradient(135deg, #f8f9fc, #eef2ff);
       --scrollbar-thumb: rgba(209,213,219,0.6);
       --glass-blur: 16px;
-      --bg-gradient: linear-gradient(135deg, #e8ecf4 0%, #f0f2f8 30%, #e6eaf5 60%, #eef0f8 100%);
-      --mesh-1: radial-gradient(ellipse at 10% 20%, rgba(99,102,241,0.07) 0%, transparent 50%);
-      --mesh-2: radial-gradient(ellipse at 90% 80%, rgba(139,92,246,0.06) 0%, transparent 50%);
-      --mesh-3: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.05) 0%, transparent 50%);
+      /* Gradient animation colors (light) */
+      --gradient-bg-start: rgb(200, 210, 240); --gradient-bg-end: rgb(220, 225, 245);
+      --first-color: 99, 102, 241; --second-color: 139, 92, 246;
+      --third-color: 59, 130, 246; --fourth-color: 168, 85, 247;
+      --fifth-color: 99, 102, 241; --pointer-color: 129, 140, 248;
+      --blob-size: 80%; --blending: hard-light;
     }
 
     [data-theme="dark"] {
@@ -52,21 +54,97 @@
       --shadow-glow: 0 0 30px rgba(129,140,248,0.06);
       --card-img-gradient: linear-gradient(135deg, #1e2030, #1a1d2e);
       --scrollbar-thumb: rgba(61,64,85,0.6);
-      --bg-gradient: linear-gradient(135deg, #0c0e16 0%, #12141e 30%, #0f1119 60%, #111320 100%);
-      --mesh-1: radial-gradient(ellipse at 10% 20%, rgba(129,140,248,0.05) 0%, transparent 50%);
-      --mesh-2: radial-gradient(ellipse at 90% 80%, rgba(167,139,250,0.04) 0%, transparent 50%);
-      --mesh-3: radial-gradient(ellipse at 50% 0%, rgba(96,165,250,0.03) 0%, transparent 50%);
+      /* Gradient animation colors (dark) */
+      --gradient-bg-start: rgb(108, 0, 162); --gradient-bg-end: rgb(0, 17, 82);
+      --first-color: 18, 113, 255; --second-color: 221, 74, 255;
+      --third-color: 100, 220, 255; --fourth-color: 200, 50, 50;
+      --fifth-color: 180, 180, 50; --pointer-color: 140, 100, 255;
     }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg-gradient); color: var(--text-primary);
+      background: linear-gradient(40deg, var(--gradient-bg-start), var(--gradient-bg-end));
+      color: var(--text-primary);
       overflow: hidden; height: 100vh; display: flex; flex-direction: column;
       -webkit-font-smoothing: antialiased;
     }
-    body::before {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background: var(--mesh-1), var(--mesh-2), var(--mesh-3);
+
+    /* ─── Animated Gradient Background ───────────────────── */
+    .gradient-bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+      background: linear-gradient(40deg, var(--gradient-bg-start), var(--gradient-bg-end));
+    }
+    .gradient-bg svg { display: none; }
+    .gradients-container {
+      width: 100%; height: 100%;
+      filter: url(#blurMe) blur(40px);
+    }
+    .gradient-blob {
+      position: absolute;
+      width: var(--blob-size); height: var(--blob-size);
+      top: calc(50% - var(--blob-size) / 2);
+      left: calc(50% - var(--blob-size) / 2);
+      mix-blend-mode: var(--blending);
+      opacity: 1;
+    }
+    .gradient-blob-1 {
+      background: radial-gradient(circle at center, rgba(var(--first-color), 0.8) 0, rgba(var(--first-color), 0) 50%) no-repeat;
+      transform-origin: center center;
+      animation: moveVertical 30s ease infinite;
+    }
+    .gradient-blob-2 {
+      background: radial-gradient(circle at center, rgba(var(--second-color), 0.8) 0, rgba(var(--second-color), 0) 50%) no-repeat;
+      transform-origin: calc(50% - 400px);
+      animation: moveInCircle 20s reverse infinite;
+    }
+    .gradient-blob-3 {
+      background: radial-gradient(circle at center, rgba(var(--third-color), 0.8) 0, rgba(var(--third-color), 0) 50%) no-repeat;
+      transform-origin: calc(50% + 400px);
+      animation: moveInCircle 40s linear infinite;
+    }
+    .gradient-blob-4 {
+      background: radial-gradient(circle at center, rgba(var(--fourth-color), 0.8) 0, rgba(var(--fourth-color), 0) 50%) no-repeat;
+      transform-origin: calc(50% - 200px);
+      animation: moveHorizontal 40s ease infinite;
+      opacity: 0.7;
+    }
+    .gradient-blob-5 {
+      background: radial-gradient(circle at center, rgba(var(--fifth-color), 0.8) 0, rgba(var(--fifth-color), 0) 50%) no-repeat;
+      transform-origin: calc(50% - 800px) calc(50% + 800px);
+      animation: moveInCircle 20s ease infinite;
+    }
+    .gradient-interactive {
+      position: absolute;
+      background: radial-gradient(circle at center, rgba(var(--pointer-color), 0.8) 0, rgba(var(--pointer-color), 0) 50%) no-repeat;
+      width: 100%; height: 100%; top: -50%; left: -50%;
+      mix-blend-mode: var(--blending);
+      opacity: 0.7;
+    }
+
+    @keyframes moveVertical {
+      0% { transform: translateY(-50%); }
+      50% { transform: translateY(50%); }
+      100% { transform: translateY(-50%); }
+    }
+    @keyframes moveInCircle {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(180deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes moveHorizontal {
+      0% { transform: translateX(-50%) translateY(-10%); }
+      50% { transform: translateX(50%) translateY(10%); }
+      100% { transform: translateX(-50%) translateY(-10%); }
+    }
+
+    /* Frosted overlay so content remains readable */
+    .gradient-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(240, 242, 248, 0.55);
+      pointer-events: none;
+    }
+    [data-theme="dark"] .gradient-bg::after {
+      background: rgba(12, 14, 22, 0.6);
     }
 
     /* ─── Top Bar ─────────────────────────────────────────── */
@@ -877,6 +955,27 @@
   </style>
 </head>
 <body>
+  <!-- Animated Gradient Background -->
+  <div class="gradient-bg" id="gradientBg">
+    <svg>
+      <defs>
+        <filter id="blurMe">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
+          <feBlend in="SourceGraphic" in2="goo" />
+        </filter>
+      </defs>
+    </svg>
+    <div class="gradients-container">
+      <div class="gradient-blob gradient-blob-1"></div>
+      <div class="gradient-blob gradient-blob-2"></div>
+      <div class="gradient-blob gradient-blob-3"></div>
+      <div class="gradient-blob gradient-blob-4"></div>
+      <div class="gradient-blob gradient-blob-5"></div>
+      <div class="gradient-interactive" id="gradientInteractive"></div>
+    </div>
+  </div>
+
   <!-- Loading -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loader"></div>

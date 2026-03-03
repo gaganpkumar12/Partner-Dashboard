@@ -1379,5 +1379,33 @@ window.toggleDarkMode = function () {
   }, { passive: true });
 })();
 
+// ─── Gradient Background Interactive Pointer ─────────────────
+(function initGradientPointer() {
+  const interactiveEl = document.getElementById("gradientInteractive");
+  if (!interactiveEl) return;
+
+  let curX = 0, curY = 0; // current animated position (center of screen start)
+  let tgX = 0, tgY = 0; // target (mouse) position
+
+  // Start in centre of viewport
+  curX = window.innerWidth / 2;
+  curY = window.innerHeight / 2;
+
+  document.addEventListener("pointermove", (e) => {
+    tgX = e.clientX;
+    tgY = e.clientY;
+  }, { passive: true });
+
+  function animate() {
+    // Lerp towards target – lower factor = smoother/slower
+    curX += (tgX - curX) / 20;
+    curY += (tgY - curY) / 20;
+    interactiveEl.style.transform =
+      `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
 // ─── Init ─────────────────────────────────────────────────────
 initSubscriptions();
