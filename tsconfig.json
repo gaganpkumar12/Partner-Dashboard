@@ -2,13 +2,13 @@
   "compilerOptions": {
     "allowJs": true,
     "strict": true,
-    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "jsx": "react-jsx",
     "skipLibCheck": true,
-    "paths": {
-      "convex/_generated/*": ["./convex/_generated/*"]
-    }
+    "noEmit": true
   },
-  "include": ["convex/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "convex"]
 }
