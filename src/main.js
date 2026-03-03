@@ -404,6 +404,10 @@ function formatDate(dateStr) {
 
 // ─── Create Card ──────────────────────────────────────────────
 function createCard(record) {
+  // Outer glow wrapper
+  const wrapper = document.createElement("div");
+  wrapper.className = "card-glow-wrapper";
+
   const card = document.createElement("div");
   card.className = "card";
   card.onclick = () => showModal(record);
@@ -457,7 +461,16 @@ function createCard(record) {
     </div>
   `;
 
-  return card;
+  // Build glow layers
+  const glowBorder = document.createElement("div");
+  glowBorder.className = "card-glow-border";
+  const glowStatic = document.createElement("div");
+  glowStatic.className = "card-glow-static";
+
+  wrapper.appendChild(glowStatic);
+  wrapper.appendChild(glowBorder);
+  wrapper.appendChild(card);
+  return wrapper;
 }
 
 // ─── Modal with Image Gallery ─────────────────────────────────
@@ -1335,6 +1348,35 @@ window.toggleDarkMode = function () {
   } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
     applyTheme(true);
   }
+})();
+
+// ─── Card Glow Mouse Tracking ─────────────────────────────────
+(function initCardGlow() {
+  let glowRAF = null;
+  document.body.addEventListener("pointermove", (e) => {
+    if (glowRAF) cancelAnimationFrame(glowRAF);
+    glowRAF = requestAnimationFrame(() => {
+      const wrappers = document.querySelectorAll(".card-glow-wrapper");
+      for (const w of wrappers) {
+        const { left, top, width, height } = w.getBoundingClientRect();
+        const cx = left + width * 0.5;
+        const cy = top + height * 0.5;
+        const proximity = 120;
+        const isNear =
+          e.clientX > left - proximity && e.clientX < left + width + proximity &&
+          e.clientY > top - proximity && e.clientY < top + height + proximity;
+
+        if (isNear) {
+          const angle = (180 * Math.atan2(e.clientY - cy, e.clientX - cx)) / Math.PI + 90;
+          w.style.setProperty("--glow-active", "1");
+          w.style.setProperty("--glow-start", String(angle));
+        } else {
+          w.style.setProperty("--glow-active", "0");
+        }
+      }
+      glowRAF = null;
+    });
+  }, { passive: true });
 })();
 
 // ─── Init ─────────────────────────────────────────────────────
