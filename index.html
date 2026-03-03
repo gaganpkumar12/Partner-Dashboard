@@ -227,14 +227,65 @@
     }
     .btn-export:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 24px rgba(16,185,129,0.35); }
     .btn-export:active { transform: translateY(0) scale(0.98); }
-    .btn-dark-toggle {
-      background: var(--surface-hover); color: var(--text-secondary); border: 1px solid var(--border);
-      padding: 8px 11px; line-height: 1; backdrop-filter: blur(8px);
+    /* ─── Animated Theme Toggle Pill ───────────────────── */
+    .theme-toggle {
+      display: flex; align-items: center;
+      width: 60px; height: 30px; padding: 3px;
+      border-radius: 9999px; cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface-hover);
+      backdrop-filter: blur(8px);
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      position: relative; flex-shrink: 0;
     }
-    .btn-dark-toggle:hover {
-      background: var(--accent-light); color: var(--accent); border-color: var(--accent-border);
-      transform: rotate(15deg) scale(1.05);
+    .theme-toggle:hover {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 12px rgba(99,102,241,0.15);
     }
+    .theme-toggle-track {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; height: 100%; position: relative;
+    }
+    .theme-toggle-thumb {
+      display: flex; justify-content: center; align-items: center;
+      width: 24px; height: 24px; border-radius: 50%;
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 2.2), background 0.3s ease;
+      position: absolute; top: 0;
+    }
+    .theme-toggle-thumb.active {
+      background: var(--accent-light);
+    }
+    .theme-toggle-thumb.inactive {
+      background: transparent;
+    }
+    /* Light mode: sun on right (thumb translated right) */
+    [data-theme="light"] .theme-toggle-thumb.active,
+    :root:not([data-theme]) .theme-toggle-thumb.active {
+      transform: translateX(30px);
+    }
+    [data-theme="light"] .theme-toggle-thumb.inactive,
+    :root:not([data-theme]) .theme-toggle-thumb.inactive {
+      transform: translateX(0);
+    }
+    /* Dark mode: moon on left (thumb at 0) */
+    [data-theme="dark"] .theme-toggle-thumb.active {
+      transform: translateX(0);
+      background: rgba(63,63,70,0.8);
+    }
+    [data-theme="dark"] .theme-toggle-thumb.inactive {
+      transform: translateX(30px);
+    }
+    [data-theme="dark"] .theme-toggle {
+      background: rgba(9,9,11,0.9);
+      border-color: rgba(63,63,70,0.7);
+    }
+    .theme-toggle-icon {
+      width: 15px; height: 15px; display: block;
+    }
+    .theme-toggle-icon.moon-icon { color: var(--text-primary); }
+    .theme-toggle-icon.sun-icon  { color: var(--text-muted); }
+    [data-theme="dark"] .theme-toggle-icon.moon-icon { color: #fff; }
+    [data-theme="dark"] .theme-toggle-icon.sun-icon  { color: #71717a; }
 
     /* ─── Job Details ─────────────────────────────────────── */
     .job-section {
@@ -1082,10 +1133,16 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export CSV
       </button>
-      <button class="btn btn-dark-toggle" id="darkToggle" onclick="toggleDarkMode()" title="Toggle dark mode">
-        <svg id="darkIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg id="lightIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button>
+      <div class="theme-toggle" id="themeToggle" onclick="toggleDarkMode()" role="button" tabindex="0" title="Toggle dark mode">
+        <div class="theme-toggle-track">
+          <div class="theme-toggle-thumb active">
+            <svg class="theme-toggle-icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </div>
+          <div class="theme-toggle-thumb inactive">
+            <svg class="theme-toggle-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
