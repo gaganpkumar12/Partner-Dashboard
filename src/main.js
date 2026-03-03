@@ -444,6 +444,9 @@ function createCard(record) {
   const videoSvg = `<svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><polygon points="5,3 19,12 5,21"/></svg>`;
 
   card.innerHTML = `
+    <div class="glass-distortion-layer"></div>
+    <div class="glass-tint-layer"></div>
+    <div class="glass-specular-layer"></div>
     <div class="card-image-wrapper">
       ${imgUrl
         ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -1361,7 +1364,7 @@ window.toggleDarkMode = function () {
         const { left, top, width, height } = w.getBoundingClientRect();
         const cx = left + width * 0.5;
         const cy = top + height * 0.5;
-        const proximity = 120;
+        const proximity = 180;
         const isNear =
           e.clientX > left - proximity && e.clientX < left + width + proximity &&
           e.clientY > top - proximity && e.clientY < top + height + proximity;

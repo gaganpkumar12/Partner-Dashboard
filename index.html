@@ -459,13 +459,13 @@
 
     /* ─── Column ──────────────────────────────────────────── */
     .column {
-      min-width: 280px; max-width: 280px; background: var(--surface);
+      min-width: 320px; max-width: 320px; background: var(--surface);
       backdrop-filter: blur(var(--glass-blur)) saturate(1.5);
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.5);
       border-radius: var(--radius-lg); display: flex; flex-direction: column;
       max-height: 100%; flex-shrink: 0; border: 1px solid var(--border);
       overflow: hidden; contain: layout style paint;
-      content-visibility: auto; contain-intrinsic-size: 280px 500px;
+      content-visibility: auto; contain-intrinsic-size: 320px 500px;
       box-shadow: var(--shadow-md), var(--shadow-glow);
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
       transform-style: preserve-3d;
@@ -527,15 +527,16 @@
 
     /* ─── Booking Card with Glow ────────────────────────── */
     .card-glow-wrapper {
-      position: relative; border-radius: calc(var(--radius-md) + 3px);
-      margin-bottom: 8px; padding: 1.5px;
-      --glow-start: 0; --glow-spread: 20; --glow-active: 0;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; border-radius: calc(var(--radius-lg) + 4px);
+      margin-bottom: 12px; padding: 2px;
+      --glow-start: 0; --glow-spread: 30; --glow-active: 0;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2), box-shadow 0.4s ease;
     }
     .card-glow-wrapper:hover {
-      transform: translateY(-3px) scale(1.01);
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(99,102,241,0.15), 0 0 60px rgba(99,102,241,0.06);
     }
-    .card-glow-wrapper:active { transform: translateY(-1px) scale(0.99); }
+    .card-glow-wrapper:active { transform: translateY(-2px) scale(0.99); }
 
     /* Glow border layer */
     .card-glow-border {
@@ -544,9 +545,9 @@
       opacity: var(--glow-active); transition: opacity 0.35s ease;
     }
     .card-glow-border::after {
-      content: ''; position: absolute; inset: 0;
+      content: ''; position: absolute; inset: -1px;
       border-radius: inherit;
-      border: 2px solid transparent;
+      border: 3px solid transparent;
       background:
         radial-gradient(circle, #dd7bbb 10%, transparent 20%),
         radial-gradient(circle at 40% 40%, #d79f1e 5%, transparent 15%),
@@ -582,15 +583,50 @@
 
     .card {
       position: relative; z-index: 1;
-      background: var(--surface); border-radius: var(--radius-md);
-      border: none; overflow: hidden; cursor: pointer; contain: layout style;
-      transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--surface); border-radius: var(--radius-lg);
+      border: none; overflow: hidden; cursor: pointer;
+      transition: box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 2.2);
     }
     .card-glow-wrapper:hover .card {
-      box-shadow: 0 8px 30px rgba(99,102,241,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: 0 12px 40px rgba(99,102,241,0.12), 0 4px 16px rgba(0,0,0,0.06);
     }
+
+    /* ─── Liquid Glass Effect Layers ───────────────────── */
+    .glass-distortion-layer {
+      position: absolute; inset: 0; z-index: 0; overflow: hidden;
+      border-radius: inherit;
+      backdrop-filter: blur(3px);
+      filter: url(#glass-distortion);
+      isolation: isolate;
+      pointer-events: none;
+    }
+    .glass-tint-layer {
+      position: absolute; inset: 0; z-index: 1;
+      border-radius: inherit;
+      background: rgba(255, 255, 255, 0.18);
+      pointer-events: none;
+    }
+    [data-theme="dark"] .glass-tint-layer {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .glass-specular-layer {
+      position: absolute; inset: 0; z-index: 2;
+      border-radius: inherit; overflow: hidden;
+      box-shadow:
+        inset 2px 2px 1px 0 rgba(255, 255, 255, 0.45),
+        inset -1px -1px 1px 1px rgba(255, 255, 255, 0.35);
+      pointer-events: none;
+    }
+    [data-theme="dark"] .glass-specular-layer {
+      box-shadow:
+        inset 2px 2px 1px 0 rgba(255, 255, 255, 0.15),
+        inset -1px -1px 1px 1px rgba(255, 255, 255, 0.10);
+    }
+    .card > .card-image-wrapper,
+    .card > .card-body { position: relative; z-index: 3; }
+
     .card-image-wrapper {
-      width: 100%; height: 120px;
+      width: 100%; height: 160px;
       background: var(--card-img-gradient);
       position: relative; overflow: hidden;
     }
@@ -617,10 +653,10 @@
       box-shadow: 0 2px 8px rgba(99,102,241,0.3);
     }
     .video-badge svg { width: 10px; height: 10px; fill: #fff; }
-    .card-body { padding: 8px 10px; }
-    .card-status-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .card-body { padding: 12px 14px; }
+    .card-status-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .status-pill {
-      font-size: 10.5px; font-weight: 700; padding: 3px 10px;
+      font-size: 11px; font-weight: 700; padding: 4px 12px;
       border-radius: 12px; text-transform: uppercase; letter-spacing: 0.4px;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -631,10 +667,10 @@
     .status-pill.work-cancelled { background: var(--red-bg); color: var(--red); }
     .status-pill.send-before { background: var(--purple-bg); color: var(--purple); }
     .status-pill.default-status { background: #f3f4f6; color: var(--text-muted); }
-    .card-date { font-size: 10.5px; color: var(--text-muted); font-weight: 500; }
+    .card-date { font-size: 11px; color: var(--text-muted); font-weight: 500; }
     .card-details {
-      font-size: 11px; color: var(--text-secondary); line-height: 1.5;
-      overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+      font-size: 12px; color: var(--text-secondary); line-height: 1.55;
+      overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3;
     }
 
     /* ─── Loading ─────────────────────────────────────────── */
@@ -955,6 +991,24 @@
   </style>
 </head>
 <body>
+  <!-- Liquid Glass SVG Filter -->
+  <svg style="display:none">
+    <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+      <feTurbulence type="fractalNoise" baseFrequency="0.001 0.005" numOctaves="1" seed="17" result="turbulence"/>
+      <feComponentTransfer in="turbulence" result="mapped">
+        <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5"/>
+        <feFuncG type="gamma" amplitude="0" exponent="1" offset="0"/>
+        <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5"/>
+      </feComponentTransfer>
+      <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap"/>
+      <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100" lightingColor="white" result="specLight">
+        <fePointLight x="-200" y="-200" z="300"/>
+      </feSpecularLighting>
+      <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage"/>
+      <feDisplacementMap in="SourceGraphic" in2="softMap" scale="200" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
   <!-- Animated Gradient Background -->
   <div class="gradient-bg" id="gradientBg">
     <svg>
