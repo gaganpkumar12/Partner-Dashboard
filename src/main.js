@@ -117,12 +117,18 @@ let lightboxIndex = 0;
 
 // ─── Render Scheduling ───────────────────────────────────────
 let renderRAF = null;
+let renderDebounceTimer = null;
 function scheduleRender() {
-  if (renderRAF) return; // already scheduled
-  renderRAF = requestAnimationFrame(() => {
-    renderRAF = null;
-    renderBoard();
-  });
+  // Debounce rapid successive calls (e.g., multiple subscription updates)
+  if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+  renderDebounceTimer = setTimeout(() => {
+    renderDebounceTimer = null;
+    if (renderRAF) return; // already scheduled
+    renderRAF = requestAnimationFrame(() => {
+      renderRAF = null;
+      renderBoard();
+    });
+  }, 16); // ~1 frame debounce
 }
 
 // ─── Subscriptions ────────────────────────────────────────────
@@ -1370,27 +1376,65 @@ window.toggleDarkMode = function () {
   let glowRAF = null;
   let lastMouseX = 0, lastMouseY = 0;
   let wrappersCache = [];
+  let visibleWrappers = new Set();
   let cacheValid = false;
+  let lastGlowTime = 0;
+  const GLOW_THROTTLE_MS = 32; // ~30fps for glow effect is plenty smooth
 
   // Rebuild cache when DOM changes (cards added/removed)
   const observer = new MutationObserver(() => { cacheValid = false; });
   observer.observe(document.getElementById("board") || document.body, { childList: true, subtree: true });
 
+  // IntersectionObserver to only track glow for visible cards
+  const visibilityObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        visibleWrappers.add(entry.target);
+      } else {
+        visibleWrappers.delete(entry.target);
+        // Reset glow when card goes offscreen
+        entry.target.style.setProperty("--glow-active", "0");
+      }
+    }
+  }, { rootMargin: "100px", threshold: 0 });
+
   function refreshCache() {
-    wrappersCache = Array.from(document.querySelectorAll(".card-glow-wrapper"));
+    const newWrappers = Array.from(document.querySelectorAll(".card-glow-wrapper"));
+    // Unobserve removed wrappers
+    for (const w of wrappersCache) {
+      if (!newWrappers.includes(w)) {
+        visibilityObserver.unobserve(w);
+        visibleWrappers.delete(w);
+      }
+    }
+    // Observe new wrappers
+    for (const w of newWrappers) {
+      if (!wrappersCache.includes(w)) {
+        visibilityObserver.observe(w);
+      }
+    }
+    wrappersCache = newWrappers;
     cacheValid = true;
   }
 
   document.body.addEventListener("pointermove", (e) => {
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
+    
+    // Skip entirely while board is scrolling
+    if (window.__boardScrolling) return;
+    
+    const now = performance.now();
+    if (now - lastGlowTime < GLOW_THROTTLE_MS) return;
+    lastGlowTime = now;
+    
     if (glowRAF) return; // already scheduled
     glowRAF = requestAnimationFrame(() => {
       if (!cacheValid) refreshCache();
       const mx = lastMouseX, my = lastMouseY;
       const proximity = 180;
-      for (let i = 0, len = wrappersCache.length; i < len; i++) {
-        const w = wrappersCache[i];
+      // Only iterate visible cards
+      for (const w of visibleWrappers) {
         const { left, top, width, height } = w.getBoundingClientRect();
         const isNear =
           mx > left - proximity && mx < left + width + proximity &&
@@ -1420,8 +1464,13 @@ window.toggleDarkMode = function () {
   let curY = window.innerHeight / 2;
   let tgX = curX, tgY = curY;
   let animating = false;
+  let lastPointerTime = 0;
+  const POINTER_THROTTLE_MS = 50; // throttle pointer updates ~20fps
 
   document.addEventListener("pointermove", (e) => {
+    const now = performance.now();
+    if (now - lastPointerTime < POINTER_THROTTLE_MS) return;
+    lastPointerTime = now;
     tgX = e.clientX;
     tgY = e.clientY;
     if (!animating) {
@@ -1437,8 +1486,8 @@ window.toggleDarkMode = function () {
     curY += dy / 20;
     interactiveEl.style.transform =
       `translate3d(${Math.round(curX)}px, ${Math.round(curY)}px, 0)`;
-    // Stop loop when close enough to target (< 0.5px delta)
-    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+    // Stop loop when close enough to target (< 1px delta — relaxed threshold)
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
       requestAnimationFrame(animate);
     } else {
       animating = false;
@@ -1477,6 +1526,32 @@ window.toggleDarkMode = function () {
       dot.style.transform = `translate(${dot.dataset.homeX}px, ${dot.dataset.homeY}px)`;
     });
   });
+})();
+
+// ─── Scroll Performance: suspend heavy effects while scrolling ─
+(function initScrollOptimizer() {
+  const boardContainer = document.querySelector(".board-container");
+  if (!boardContainer) return;
+
+  let scrollTimer = null;
+  let isScrolling = false;
+
+  boardContainer.addEventListener("scroll", () => {
+    if (!isScrolling) {
+      isScrolling = true;
+      boardContainer.classList.add("is-scrolling");
+      // Notify glow tracker to pause
+      window.__boardScrolling = true;
+    }
+    // Reset timer on each scroll event
+    if (scrollTimer) clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      isScrolling = false;
+      boardContainer.classList.remove("is-scrolling");
+      window.__boardScrolling = false;
+      scrollTimer = null;
+    }, 150); // restore effects 150ms after scroll stops
+  }, { passive: true });
 })();
 
 // ─── Init ─────────────────────────────────────────────────────
