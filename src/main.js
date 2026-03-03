@@ -117,18 +117,12 @@ let lightboxIndex = 0;
 
 // ─── Render Scheduling ───────────────────────────────────────
 let renderRAF = null;
-let renderDebounceTimer = null;
 function scheduleRender() {
-  // Debounce rapid successive calls (e.g., multiple subscription updates)
-  if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
-  renderDebounceTimer = setTimeout(() => {
-    renderDebounceTimer = null;
-    if (renderRAF) return; // already scheduled
-    renderRAF = requestAnimationFrame(() => {
-      renderRAF = null;
-      renderBoard();
-    });
-  }, 16); // ~1 frame debounce
+  if (renderRAF) return; // already scheduled
+  renderRAF = requestAnimationFrame(() => {
+    renderRAF = null;
+    renderBoard();
+  });
 }
 
 // ─── Subscriptions ────────────────────────────────────────────
@@ -1371,82 +1365,27 @@ window.toggleDarkMode = function () {
   }
 })();
 
-// ─── Card Glow Mouse Tracking (Optimized) ─────────────────────
+// ─── Card Glow Mouse Tracking ─────────────────────────────────
 (function initCardGlow() {
   let glowRAF = null;
-  let lastMouseX = 0, lastMouseY = 0;
-  let wrappersCache = [];
-  let visibleWrappers = new Set();
-  let cacheValid = false;
-  let lastGlowTime = 0;
-  const GLOW_THROTTLE_MS = 32; // ~30fps for glow effect is plenty smooth
-
-  // Rebuild cache when DOM changes (cards added/removed)
-  const observer = new MutationObserver(() => { cacheValid = false; });
-  observer.observe(document.getElementById("board") || document.body, { childList: true, subtree: true });
-
-  // IntersectionObserver to only track glow for visible cards
-  const visibilityObserver = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        visibleWrappers.add(entry.target);
-      } else {
-        visibleWrappers.delete(entry.target);
-        // Reset glow when card goes offscreen
-        entry.target.style.setProperty("--glow-active", "0");
-      }
-    }
-  }, { rootMargin: "100px", threshold: 0 });
-
-  function refreshCache() {
-    const newWrappers = Array.from(document.querySelectorAll(".card-glow-wrapper"));
-    // Unobserve removed wrappers
-    for (const w of wrappersCache) {
-      if (!newWrappers.includes(w)) {
-        visibilityObserver.unobserve(w);
-        visibleWrappers.delete(w);
-      }
-    }
-    // Observe new wrappers
-    for (const w of newWrappers) {
-      if (!wrappersCache.includes(w)) {
-        visibilityObserver.observe(w);
-      }
-    }
-    wrappersCache = newWrappers;
-    cacheValid = true;
-  }
-
   document.body.addEventListener("pointermove", (e) => {
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-    
-    // Skip entirely while board is scrolling
-    if (window.__boardScrolling) return;
-    
-    const now = performance.now();
-    if (now - lastGlowTime < GLOW_THROTTLE_MS) return;
-    lastGlowTime = now;
-    
-    if (glowRAF) return; // already scheduled
+    if (glowRAF) cancelAnimationFrame(glowRAF);
     glowRAF = requestAnimationFrame(() => {
-      if (!cacheValid) refreshCache();
-      const mx = lastMouseX, my = lastMouseY;
-      const proximity = 180;
-      // Only iterate visible cards
-      for (const w of visibleWrappers) {
+      const wrappers = document.querySelectorAll(".card-glow-wrapper");
+      for (const w of wrappers) {
         const { left, top, width, height } = w.getBoundingClientRect();
+        const cx = left + width * 0.5;
+        const cy = top + height * 0.5;
+        const proximity = 180;
         const isNear =
-          mx > left - proximity && mx < left + width + proximity &&
-          my > top - proximity && my < top + height + proximity;
+          e.clientX > left - proximity && e.clientX < left + width + proximity &&
+          e.clientY > top - proximity && e.clientY < top + height + proximity;
 
         if (isNear) {
-          const cx = left + width * 0.5;
-          const cy = top + height * 0.5;
-          const angle = (180 * Math.atan2(my - cy, mx - cx)) / Math.PI + 90;
+          const angle = (180 * Math.atan2(e.clientY - cy, e.clientX - cx)) / Math.PI + 90;
           w.style.setProperty("--glow-active", "1");
           w.style.setProperty("--glow-start", String(angle));
-        } else if (w.style.getPropertyValue("--glow-active") === "1") {
+        } else {
           w.style.setProperty("--glow-active", "0");
         }
       }
@@ -1455,44 +1394,32 @@ window.toggleDarkMode = function () {
   }, { passive: true });
 })();
 
-// ─── Gradient Background Interactive Pointer (Optimized) ─────
+// ─── Gradient Background Interactive Pointer ─────────────────
 (function initGradientPointer() {
   const interactiveEl = document.getElementById("gradientInteractive");
   if (!interactiveEl) return;
 
-  let curX = window.innerWidth / 2;
-  let curY = window.innerHeight / 2;
-  let tgX = curX, tgY = curY;
-  let animating = false;
-  let lastPointerTime = 0;
-  const POINTER_THROTTLE_MS = 50; // throttle pointer updates ~20fps
+  let curX = 0, curY = 0; // current animated position (center of screen start)
+  let tgX = 0, tgY = 0; // target (mouse) position
+
+  // Start in centre of viewport
+  curX = window.innerWidth / 2;
+  curY = window.innerHeight / 2;
 
   document.addEventListener("pointermove", (e) => {
-    const now = performance.now();
-    if (now - lastPointerTime < POINTER_THROTTLE_MS) return;
-    lastPointerTime = now;
     tgX = e.clientX;
     tgY = e.clientY;
-    if (!animating) {
-      animating = true;
-      animate();
-    }
   }, { passive: true });
 
   function animate() {
-    const dx = tgX - curX;
-    const dy = tgY - curY;
-    curX += dx / 20;
-    curY += dy / 20;
+    // Lerp towards target – lower factor = smoother/slower
+    curX += (tgX - curX) / 20;
+    curY += (tgY - curY) / 20;
     interactiveEl.style.transform =
-      `translate3d(${Math.round(curX)}px, ${Math.round(curY)}px, 0)`;
-    // Stop loop when close enough to target (< 1px delta — relaxed threshold)
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-      requestAnimationFrame(animate);
-    } else {
-      animating = false;
-    }
+      `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
+    requestAnimationFrame(animate);
   }
+  animate();
 })();
 
 // ─── Magnetize Particles (Export Button) ──────────────────────
@@ -1526,32 +1453,6 @@ window.toggleDarkMode = function () {
       dot.style.transform = `translate(${dot.dataset.homeX}px, ${dot.dataset.homeY}px)`;
     });
   });
-})();
-
-// ─── Scroll Performance: suspend heavy effects while scrolling ─
-(function initScrollOptimizer() {
-  const boardContainer = document.querySelector(".board-container");
-  if (!boardContainer) return;
-
-  let scrollTimer = null;
-  let isScrolling = false;
-
-  boardContainer.addEventListener("scroll", () => {
-    if (!isScrolling) {
-      isScrolling = true;
-      boardContainer.classList.add("is-scrolling");
-      // Notify glow tracker to pause
-      window.__boardScrolling = true;
-    }
-    // Reset timer on each scroll event
-    if (scrollTimer) clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => {
-      isScrolling = false;
-      boardContainer.classList.remove("is-scrolling");
-      window.__boardScrolling = false;
-      scrollTimer = null;
-    }, 150); // restore effects 150ms after scroll stops
-  }, { passive: true });
 })();
 
 // ─── Init ─────────────────────────────────────────────────────
