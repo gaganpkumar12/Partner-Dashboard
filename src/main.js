@@ -464,14 +464,6 @@ function createCard(record) {
     </div>
   `;
 
-  // Build glow layers
-  const glowBorder = document.createElement("div");
-  glowBorder.className = "card-glow-border";
-  const glowStatic = document.createElement("div");
-  glowStatic.className = "card-glow-static";
-
-  wrapper.appendChild(glowStatic);
-  wrapper.appendChild(glowBorder);
   wrapper.appendChild(card);
   return wrapper;
 }
@@ -1365,62 +1357,7 @@ window.toggleDarkMode = function () {
   }
 })();
 
-// ─── Card Glow Mouse Tracking ─────────────────────────────────
-(function initCardGlow() {
-  let glowRAF = null;
-  document.body.addEventListener("pointermove", (e) => {
-    if (glowRAF) cancelAnimationFrame(glowRAF);
-    glowRAF = requestAnimationFrame(() => {
-      const wrappers = document.querySelectorAll(".card-glow-wrapper");
-      for (const w of wrappers) {
-        const { left, top, width, height } = w.getBoundingClientRect();
-        const cx = left + width * 0.5;
-        const cy = top + height * 0.5;
-        const proximity = 180;
-        const isNear =
-          e.clientX > left - proximity && e.clientX < left + width + proximity &&
-          e.clientY > top - proximity && e.clientY < top + height + proximity;
 
-        if (isNear) {
-          const angle = (180 * Math.atan2(e.clientY - cy, e.clientX - cx)) / Math.PI + 90;
-          w.style.setProperty("--glow-active", "1");
-          w.style.setProperty("--glow-start", String(angle));
-        } else {
-          w.style.setProperty("--glow-active", "0");
-        }
-      }
-      glowRAF = null;
-    });
-  }, { passive: true });
-})();
-
-// ─── Gradient Background Interactive Pointer ─────────────────
-(function initGradientPointer() {
-  const interactiveEl = document.getElementById("gradientInteractive");
-  if (!interactiveEl) return;
-
-  let curX = 0, curY = 0; // current animated position (center of screen start)
-  let tgX = 0, tgY = 0; // target (mouse) position
-
-  // Start in centre of viewport
-  curX = window.innerWidth / 2;
-  curY = window.innerHeight / 2;
-
-  document.addEventListener("pointermove", (e) => {
-    tgX = e.clientX;
-    tgY = e.clientY;
-  }, { passive: true });
-
-  function animate() {
-    // Lerp towards target – lower factor = smoother/slower
-    curX += (tgX - curX) / 20;
-    curY += (tgY - curY) / 20;
-    interactiveEl.style.transform =
-      `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
-    requestAnimationFrame(animate);
-  }
-  animate();
-})();
 
 // ─── Magnetize Particles (Export Button) ──────────────────────
 (function initMagnetizeParticles() {
