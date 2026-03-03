@@ -1365,27 +1365,44 @@ window.toggleDarkMode = function () {
   }
 })();
 
-// ─── Card Glow Mouse Tracking ─────────────────────────────────
+// ─── Card Glow Mouse Tracking (Optimized) ─────────────────────
 (function initCardGlow() {
   let glowRAF = null;
+  let lastMouseX = 0, lastMouseY = 0;
+  let wrappersCache = [];
+  let cacheValid = false;
+
+  // Rebuild cache when DOM changes (cards added/removed)
+  const observer = new MutationObserver(() => { cacheValid = false; });
+  observer.observe(document.getElementById("board") || document.body, { childList: true, subtree: true });
+
+  function refreshCache() {
+    wrappersCache = Array.from(document.querySelectorAll(".card-glow-wrapper"));
+    cacheValid = true;
+  }
+
   document.body.addEventListener("pointermove", (e) => {
-    if (glowRAF) cancelAnimationFrame(glowRAF);
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    if (glowRAF) return; // already scheduled
     glowRAF = requestAnimationFrame(() => {
-      const wrappers = document.querySelectorAll(".card-glow-wrapper");
-      for (const w of wrappers) {
+      if (!cacheValid) refreshCache();
+      const mx = lastMouseX, my = lastMouseY;
+      const proximity = 180;
+      for (let i = 0, len = wrappersCache.length; i < len; i++) {
+        const w = wrappersCache[i];
         const { left, top, width, height } = w.getBoundingClientRect();
-        const cx = left + width * 0.5;
-        const cy = top + height * 0.5;
-        const proximity = 180;
         const isNear =
-          e.clientX > left - proximity && e.clientX < left + width + proximity &&
-          e.clientY > top - proximity && e.clientY < top + height + proximity;
+          mx > left - proximity && mx < left + width + proximity &&
+          my > top - proximity && my < top + height + proximity;
 
         if (isNear) {
-          const angle = (180 * Math.atan2(e.clientY - cy, e.clientX - cx)) / Math.PI + 90;
+          const cx = left + width * 0.5;
+          const cy = top + height * 0.5;
+          const angle = (180 * Math.atan2(my - cy, mx - cx)) / Math.PI + 90;
           w.style.setProperty("--glow-active", "1");
           w.style.setProperty("--glow-start", String(angle));
-        } else {
+        } else if (w.style.getPropertyValue("--glow-active") === "1") {
           w.style.setProperty("--glow-active", "0");
         }
       }
@@ -1394,32 +1411,39 @@ window.toggleDarkMode = function () {
   }, { passive: true });
 })();
 
-// ─── Gradient Background Interactive Pointer ─────────────────
+// ─── Gradient Background Interactive Pointer (Optimized) ─────
 (function initGradientPointer() {
   const interactiveEl = document.getElementById("gradientInteractive");
   if (!interactiveEl) return;
 
-  let curX = 0, curY = 0; // current animated position (center of screen start)
-  let tgX = 0, tgY = 0; // target (mouse) position
-
-  // Start in centre of viewport
-  curX = window.innerWidth / 2;
-  curY = window.innerHeight / 2;
+  let curX = window.innerWidth / 2;
+  let curY = window.innerHeight / 2;
+  let tgX = curX, tgY = curY;
+  let animating = false;
 
   document.addEventListener("pointermove", (e) => {
     tgX = e.clientX;
     tgY = e.clientY;
+    if (!animating) {
+      animating = true;
+      animate();
+    }
   }, { passive: true });
 
   function animate() {
-    // Lerp towards target – lower factor = smoother/slower
-    curX += (tgX - curX) / 20;
-    curY += (tgY - curY) / 20;
+    const dx = tgX - curX;
+    const dy = tgY - curY;
+    curX += dx / 20;
+    curY += dy / 20;
     interactiveEl.style.transform =
-      `translate(${Math.round(curX)}px, ${Math.round(curY)}px)`;
-    requestAnimationFrame(animate);
+      `translate3d(${Math.round(curX)}px, ${Math.round(curY)}px, 0)`;
+    // Stop loop when close enough to target (< 0.5px delta)
+    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+      requestAnimationFrame(animate);
+    } else {
+      animating = false;
+    }
   }
-  animate();
 })();
 
 // ─── Magnetize Particles (Export Button) ──────────────────────
