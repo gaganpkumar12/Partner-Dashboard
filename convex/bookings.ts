@@ -21,6 +21,14 @@ export const PARTNERS = [
   "Alameen old FHC", "Rishu", "Zamal Khan", "BK - Ebadul",
   "Kuddus", "Rajibul", "Jakir Hussian2", "Alameen Bk New",
   "Sameer Team", "Alamin new FHC", "zakir hussain",
+  // ── Added from POC sheet (not previously in list) ──
+  "Alameen", "Hasan Charlie", "Khobirul", "Masum", "Kudus",
+  "Harun", "Ibrahim", "Hasib Sheikh",
+  "Mohammed Alamgir Mondal", "Zakir Hussian", "BK - Forkan",
+  "Vivek Painter", "mukesh yadav", "Sourav Painter",
+  "Pradumn Painter", "Kumar Painter", "Prem Shankar Painter",
+  "Anil", "Bikas",
+  "Nasir", "BK Naeem", "Alameen New FHC",
 ];
 
 // Get all bookings grouped by partner (real-time reactive query)

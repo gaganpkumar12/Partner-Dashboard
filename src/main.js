@@ -79,13 +79,25 @@ function renderVideoPlayer(container, rawUrl) {
 // ─── State ────────────────────────────────────────────────────
 // ─── POC (Point of Contact) → Partners Mapping ───────────────
 const POC_MAP = {
-  "Nilesh": ["Abdul Kalam","Alameen","Aslam","Bilal","Hasan Charlie","Jamal","Kudus","Masum","Munna","Rahim","Rana Khan","Sojib","Sohag Khan","BK-Riyazul","BK-Rubel","Rishu","Quem","Maxwillam Narzary","Farhan Ahmed","Khobirul"],
-  "Bishal": ["Dulal Khan","Harun","Hasib","Hirak Mondal","Ibrahim","Maharaj","Mehadi Hasan","Ranjith","Salim 2","Salim","Umesh","Zamal Khan","BK-Babu Reddy","Munir Khan BK","BK Rameez","Masum Howldar","Mijan New","Hasib Sheikh","Michu Laskar","Saidul Babu"],
-  "Vineet": ["Gouse","Mohammed Alamgir Mondal","Bilal Mk","Md. Rajib","Mizan","Sahin","Sameer","Kausik Barman","Zakir Hussian","BK-Beelal","BK-Forkan","BK-Nasir Sheikh","Vivek Painter","mukesh yadav","Sourav Painter","Pradumn Painter","Kumar Painter","Prem Shankar Painter","Anil","Bikas"],
-  "Vishal Singh": ["Hasan New","Hirendra","Abir","Melon Rizwan","Nasir","Rajibul","Ridoy","Sagar Khan","Sujan","Usuf","Yunus Khan","BK-Rafikul","Kohli"],
-  "Mohith": ["MD Tuhin","Rofikul Islam","Abdur rahim","Zakir","BK Naeem","Alameen New FHC","Md. Raju","BK-Ebadul","Sohel","Suman","Shiva","Jakir Hussian2","Alameen BK New"]
+  "Nilesh": ["Abdul Kalam","Alameen","Alameen old FHC","Aslam","ASLAM","Bilal","Hasan Charlie","Jamal","Kudus","Kuddus","Masum","Masum old","Munna","MUNNA","Rahim","Rana Khan","Sojib","Sohag Khan","BK-Riyazul","BK - Riyazul","BK-Rubel","BK - Rubel","Rishu","Quem","Maxwillam Narzary","Farhan Ahmed","Khobirul"],
+  "Bishal": ["Dulal Khan","DULAL KHAN","Harun","Hasib","Hirak Mondal","Ibrahim","Maharaj","Mehadi Hasan","Ranjith","Salim 2","Salim","Umesh","Zamal Khan","BK-Babu Reddy","BK - Babu Reddy","Munir Khan BK","BK Rameez","BK - Rameez","Masum Howldar","Mijan New","Hasib Sheikh","Michu Laskar","Michu laskar","Saidul Babu"],
+  "Vineet": ["Gouse","GOUSE","Mohammed Alamgir Mondal","ALAMGIR MONDAL","Bilal Mk","Md. Rajib","Mizan","Sahin","Sameer","Kausik Barman","Zakir Hussian","zakir hussain","BK-Beelal","BK - Beelal","BK-Forkan","BK - Forkan","Forkan","BK-Nasir Sheikh","BK - Nasir Sheikh","Vivek Painter","mukesh yadav","Sourav Painter","Pradumn Painter","Kumar Painter","Prem Shankar Painter","Anil","Bikas"],
+  "Vishal Singh": ["Hasan New","Hirendra","Abir","Melon Rizwan","Nasir","NASIR KHAN","Rajibul","Ridoy","Sagar Khan","Sagar khan","Sujan","Usuf","Yunus Khan","BK-Rafikul","BK - Rafikul","Kohli","KOHLI"],
+  "Mohith": ["MD Tuhin","Md Tuhin","Rofikul Islam","Abdur rahim","Abdur Rahim","Zakir","zakir","BK Naeem","BK - Naeem","Alameen New FHC","Alamin new FHC","Md. Raju","BK-Ebadul","BK - Ebadul","Sohel","Suman","Shiva","shiva","Jakir Hussian2","Alameen BK New","Alameen Bk New"]
 };
 const POC_NAMES = Object.keys(POC_MAP);
+
+// Normalize partner names for robust POC matching (handles dashes, spaces, case, BK spacing)
+function normalizeName(name) {
+  let n = (name || "").toLowerCase();
+  // Normalize unicode dashes to hyphen
+  n = n.replace(/[\u2013\u2014\u2010\u2011\u2012]/g, "-");
+  // Normalize "bk - ", "bk- ", "bk -" to "bk-" (handles BK spacing variants)
+  n = n.replace(/\bbk\s*-\s*/g, "bk-");
+  // Collapse spaces and trim
+  n = n.replace(/\s+/g, " ").trim();
+  return n;
+}
 
 let allData = {};
 let partners = [];
@@ -211,8 +223,8 @@ function renderBoard() {
   // POC filter
   if (currentPOCFilter) {
     const pocPartners = POC_MAP[currentPOCFilter] || [];
-    const pocSet = new Set(pocPartners.map(n => n.toLowerCase()));
-    filteredPartners = filteredPartners.filter((p) => pocSet.has(p.toLowerCase()));
+    const pocSet = new Set(pocPartners.map(n => normalizeName(n)));
+    filteredPartners = filteredPartners.filter((p) => pocSet.has(normalizeName(p)));
   }
 
   // Build a map of what we need: partner -> filtered records
@@ -1152,8 +1164,8 @@ window.exportCSV = async function () {
     }
     if (currentPOCFilter) {
       const pocPartners = POC_MAP[currentPOCFilter] || [];
-      const pocSet = new Set(pocPartners.map(n => n.toLowerCase()));
-      filteredPartners = filteredPartners.filter((p) => pocSet.has(p.toLowerCase()));
+      const pocSet = new Set(pocPartners.map(n => normalizeName(n)));
+      filteredPartners = filteredPartners.filter((p) => pocSet.has(normalizeName(p)));
     }
 
     // Only partners with bookings
@@ -1195,16 +1207,20 @@ window.exportCSV = async function () {
       "Count of Bookings",
       "Count of Review Photos",
       "Count of Estimate",
-      "Count of Photos",
+      "Count of Reach Selfie",
+      "Count of Before Photo",
+      "Count of After Photo",
       "Count of Lunch Time Video",
       "Count of Evening Time Video",
-      "Count of Feedback Images"
+      "Count of Feedback Images",
+      "Count of Work Finished"
     ];
 
     let csv = headers.map(escapeCSV).join(",") + "\n";
 
     let totalBookings = 0, totalReviews = 0, totalEstimates = 0;
-    let totalPhotos = 0, totalLunch = 0, totalEvening = 0, totalFeedback = 0;
+    let totalReachSelfie = 0, totalBeforePhoto = 0, totalAfterPhoto = 0;
+    let totalLunch = 0, totalEvening = 0, totalFeedback = 0, totalWorkFinished = 0;
 
     filteredPartners.forEach((partner) => {
       let records = allData[partner] || [];
@@ -1227,6 +1243,9 @@ window.exportCSV = async function () {
 
       let countBookings = records.length;
       let countLunchVideo = 0;
+      let countReachSelfie = 0;
+      let countBeforePhoto = 0;
+      let countWorkFinished = 0;
       const partnerJobs = [];
 
       records.forEach((r) => {
@@ -1239,16 +1258,19 @@ window.exportCSV = async function () {
           } catch {}
         }
         if (hasLunch) countLunchVideo++;
+        if (r.reachedSelfie && r.reachedSelfie.length > 0) countReachSelfie++;
+        if (r.beforePhotos && r.beforePhotos.length > 0) countBeforePhoto++;
+        if (getStatusClass(r) === "work-finished") countWorkFinished++;
         const jobs = jobsByBookingId[r.zohoId] || [];
         partnerJobs.push(...jobs);
       });
 
-      let countReviews = 0, countEstimates = 0, countPhotos = 0;
+      let countReviews = 0, countEstimates = 0, countAfterPhoto = 0;
       let countEvening = 0, countFeedback = 0;
       partnerJobs.forEach((job) => {
         if (job.googleReviewPhotos && job.googleReviewPhotos.length > 0) countReviews++;
         if (job.amount && job.amount.trim() !== "" && job.amount !== "0") countEstimates++;
-        if (job.afterPhotos && job.afterPhotos.length > 0) countPhotos++;
+        if (job.afterPhotos && job.afterPhotos.length > 0) countAfterPhoto++;
         if (job.eveningCheckoutVideo) countEvening++;
         if (job.feedbackImages && job.feedbackImages.length > 0) countFeedback++;
       });
@@ -1256,16 +1278,19 @@ window.exportCSV = async function () {
       totalBookings += countBookings;
       totalReviews += countReviews;
       totalEstimates += countEstimates;
-      totalPhotos += countPhotos;
+      totalReachSelfie += countReachSelfie;
+      totalBeforePhoto += countBeforePhoto;
+      totalAfterPhoto += countAfterPhoto;
       totalLunch += countLunchVideo;
       totalEvening += countEvening;
       totalFeedback += countFeedback;
+      totalWorkFinished += countWorkFinished;
 
-      csv += [partner, countBookings, countReviews, countEstimates, countPhotos, countLunchVideo, countEvening, countFeedback].map(escapeCSV).join(",") + "\n";
+      csv += [partner, countBookings, countReviews, countEstimates, countReachSelfie, countBeforePhoto, countAfterPhoto, countLunchVideo, countEvening, countFeedback, countWorkFinished].map(escapeCSV).join(",") + "\n";
     });
 
     // Grand Total row
-    csv += ["Grand Total", totalBookings, totalReviews, totalEstimates, totalPhotos, totalLunch, totalEvening, totalFeedback].map(escapeCSV).join(",") + "\n";
+    csv += ["Grand Total", totalBookings, totalReviews, totalEstimates, totalReachSelfie, totalBeforePhoto, totalAfterPhoto, totalLunch, totalEvening, totalFeedback, totalWorkFinished].map(escapeCSV).join(",") + "\n";
 
     // Download
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
