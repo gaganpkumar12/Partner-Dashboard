@@ -8,6 +8,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* Animatable CSS custom properties for gradient buttons */
+    @property --gbtn-pos-x { syntax: '<percentage>'; initial-value: 11.14%; inherits: false; }
+    @property --gbtn-pos-y { syntax: '<percentage>'; initial-value: 140%; inherits: false; }
+    @property --gbtn-spread-x { syntax: '<percentage>'; initial-value: 150%; inherits: false; }
+    @property --gbtn-spread-y { syntax: '<percentage>'; initial-value: 180.06%; inherits: false; }
+    @property --gbtn-c1 { syntax: '<color>'; initial-value: #000; inherits: false; }
+    @property --gbtn-c2 { syntax: '<color>'; initial-value: #08012c; inherits: false; }
+    @property --gbtn-c3 { syntax: '<color>'; initial-value: #4e1e40; inherits: false; }
+    @property --gbtn-c4 { syntax: '<color>'; initial-value: #70464e; inherits: false; }
+    @property --gbtn-c5 { syntax: '<color>'; initial-value: #88394c; inherits: false; }
+    @property --gbtn-s1 { syntax: '<percentage>'; initial-value: 37.35%; inherits: false; }
+    @property --gbtn-s2 { syntax: '<percentage>'; initial-value: 61.36%; inherits: false; }
+    @property --gbtn-s3 { syntax: '<percentage>'; initial-value: 78.42%; inherits: false; }
+    @property --gbtn-s4 { syntax: '<percentage>'; initial-value: 89.52%; inherits: false; }
+    @property --gbtn-s5 { syntax: '<percentage>'; initial-value: 100%; inherits: false; }
+    @property --gbtn-border-angle { syntax: '<angle>'; initial-value: 20deg; inherits: false; }
+    @property --gbtn-bc1 { syntax: '<color>'; initial-value: hsla(340,75%,60%,0.2); inherits: false; }
+    @property --gbtn-bc2 { syntax: '<color>'; initial-value: hsla(340,75%,40%,0.75); inherits: false; }
+
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
@@ -212,20 +231,98 @@
       content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
       opacity: 0; transition: opacity 0.25s;
+      pointer-events: none; z-index: 0;
     }
     .btn:hover::after { opacity: 1; }
+    .btn > * { position: relative; z-index: 1; }
+    .btn > svg { position: relative; z-index: 1; }
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #818cf8); color: #fff;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.2);
+      color: #fff; position: relative;
+      background: radial-gradient(
+        var(--gbtn-spread-x) var(--gbtn-spread-y) at var(--gbtn-pos-x) var(--gbtn-pos-y),
+        var(--gbtn-c1) var(--gbtn-s1), var(--gbtn-c2) var(--gbtn-s2),
+        var(--gbtn-c3) var(--gbtn-s3), var(--gbtn-c4) var(--gbtn-s4),
+        var(--gbtn-c5) var(--gbtn-s5)
+      );
+      /* Sync button: purple/indigo palette */
+      --gbtn-c1: #1a0533; --gbtn-c2: #2e1065; --gbtn-c3: #4338ca;
+      --gbtn-c4: #6366f1; --gbtn-c5: #818cf8;
+      --gbtn-bc1: hsla(245,75%,70%,0.25); --gbtn-bc2: hsla(245,75%,55%,0.8);
+      box-shadow: 0 2px 12px rgba(99,102,241,0.25);
+      transition:
+        --gbtn-pos-x 0.5s, --gbtn-pos-y 0.5s,
+        --gbtn-spread-x 0.5s, --gbtn-spread-y 0.5s,
+        --gbtn-c1 0.5s, --gbtn-c2 0.5s, --gbtn-c3 0.5s, --gbtn-c4 0.5s, --gbtn-c5 0.5s,
+        --gbtn-s1 0.5s, --gbtn-s2 0.5s, --gbtn-s3 0.5s, --gbtn-s4 0.5s, --gbtn-s5 0.5s,
+        --gbtn-border-angle 0.5s, --gbtn-bc1 0.5s, --gbtn-bc2 0.5s,
+        transform 0.25s, box-shadow 0.25s;
     }
-    .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(var(--gbtn-border-angle), var(--gbtn-bc1), var(--gbtn-bc2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .btn-primary:hover {
+      --gbtn-pos-x: 0%; --gbtn-pos-y: 91.51%;
+      --gbtn-spread-x: 120.24%; --gbtn-spread-y: 103.18%;
+      --gbtn-c1: #818cf8; --gbtn-c2: #a78bfa; --gbtn-c3: #c084fc;
+      --gbtn-c4: #2e1065; --gbtn-c5: #000;
+      --gbtn-border-angle: 190deg;
+      --gbtn-bc1: hsla(250,78%,90%,0.15); --gbtn-bc2: hsla(260,75%,80%,0.7);
+      --gbtn-s1: 0%; --gbtn-s2: 8.8%; --gbtn-s3: 21.44%; --gbtn-s4: 71.34%; --gbtn-s5: 85.76%;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(99,102,241,0.4);
+    }
     .btn-primary:active { transform: translateY(0) scale(0.98); }
     .btn-primary:disabled { background: #d1d5db; cursor: not-allowed; transform: none; box-shadow: none; }
     .btn-export {
-      background: linear-gradient(135deg, var(--green), #34d399); color: #fff;
-      box-shadow: 0 2px 8px rgba(16,185,129,0.2);
+      color: #fff; position: relative;
+      background: radial-gradient(
+        var(--gbtn-spread-x) var(--gbtn-spread-y) at var(--gbtn-pos-x) var(--gbtn-pos-y),
+        var(--gbtn-c1) var(--gbtn-s1), var(--gbtn-c2) var(--gbtn-s2),
+        var(--gbtn-c3) var(--gbtn-s3), var(--gbtn-c4) var(--gbtn-s4),
+        var(--gbtn-c5) var(--gbtn-s5)
+      );
+      /* Export button: green/emerald palette */
+      --gbtn-c1: #002216; --gbtn-c2: #064e3b; --gbtn-c3: #059669;
+      --gbtn-c4: #34d399; --gbtn-c5: #6ee7b7;
+      --gbtn-bc1: hsla(160,75%,60%,0.2); --gbtn-bc2: hsla(160,75%,45%,0.75);
+      --gbtn-border-angle: 20deg;
+      box-shadow: 0 2px 12px rgba(16,185,129,0.25);
+      transition:
+        --gbtn-pos-x 0.5s, --gbtn-pos-y 0.5s,
+        --gbtn-spread-x 0.5s, --gbtn-spread-y 0.5s,
+        --gbtn-c1 0.5s, --gbtn-c2 0.5s, --gbtn-c3 0.5s, --gbtn-c4 0.5s, --gbtn-c5 0.5s,
+        --gbtn-s1 0.5s, --gbtn-s2 0.5s, --gbtn-s3 0.5s, --gbtn-s4 0.5s, --gbtn-s5 0.5s,
+        --gbtn-border-angle 0.5s, --gbtn-bc1 0.5s, --gbtn-bc2 0.5s,
+        transform 0.25s, box-shadow 0.25s;
     }
-    .btn-export:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 24px rgba(16,185,129,0.35); }
+    .btn-export::before {
+      content: ''; position: absolute; inset: 0; border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(var(--gbtn-border-angle), var(--gbtn-bc1), var(--gbtn-bc2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .btn-export:hover {
+      --gbtn-pos-x: 0%; --gbtn-pos-y: 95.51%;
+      --gbtn-spread-x: 110.24%; --gbtn-spread-y: 110.2%;
+      --gbtn-c1: #6ee7b7; --gbtn-c2: #34d399; --gbtn-c3: #059669;
+      --gbtn-c4: #064e3b; --gbtn-c5: #000;
+      --gbtn-border-angle: 210deg;
+      --gbtn-bc1: hsla(160,75%,90%,0.15); --gbtn-bc2: hsla(160,50%,75%,0.7);
+      --gbtn-s1: 0%; --gbtn-s2: 10%; --gbtn-s3: 35.44%; --gbtn-s4: 71.34%; --gbtn-s5: 90.76%;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(16,185,129,0.4);
+    }
     .btn-export:active { transform: translateY(0) scale(0.98); }
     /* ─── Animated Theme Toggle Pill ───────────────────── */
     .theme-toggle {
