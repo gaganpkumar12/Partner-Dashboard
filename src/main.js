@@ -461,9 +461,9 @@ function createCard(record) {
     <div class="glass-distortion-layer"></div>
     <div class="glass-tint-layer"></div>
     <div class="glass-specular-layer"></div>
-    <div class="card-image-wrapper">
+    <div class="card-image-wrapper${imgUrl ? ' shimmer' : ''}">
       ${imgUrl
-        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onload="this.parentElement.classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.parentElement.classList.remove('shimmer')">
            <div class="no-img" style="display:none">${noImgSvg}<span>Failed to load</span></div>`
         : `<div class="no-img">${noImgSvg}<span>No image available</span></div>`}
       ${photoCount > 0 ? `<div class="photo-badge">${cameraSvg} ${photoCount}</div>` : ""}
