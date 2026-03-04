@@ -344,10 +344,7 @@ function createColumn(partnerName, records) {
   `;
 
   const body = col.querySelector(".column-body");
-  records.forEach((record, idx) => {
-    const card = createCard(record);
-    body.appendChild(card);
-  });
+  records.forEach((record) => body.appendChild(createCard(record)));
   return col;
 }
 
@@ -385,10 +382,7 @@ function updateColumn(col, partnerName, records) {
       body.innerHTML = `<div class="no-records"><svg viewBox="0 0 24 24"><path d="M20 6H12L10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>No bookings</div>`;
     } else {
       const frag = document.createDocumentFragment();
-      records.forEach((record, idx) => {
-        const card = createCard(record);
-        frag.appendChild(card);
-      });
+      records.forEach((record) => frag.appendChild(createCard(record)));
       body.appendChild(frag);
     }
   }
@@ -429,7 +423,7 @@ function createCard(record) {
   wrapper.className = "card-glow-wrapper";
 
   const card = document.createElement("div");
-  card.className = imgUrl ? "card shimmer-card" : "card";
+  card.className = "card";
   card.onclick = () => showModal(record);
 
   const statusText = getStatusText(record);
@@ -469,7 +463,7 @@ function createCard(record) {
     <div class="glass-specular-layer"></div>
     <div class="card-image-wrapper">
       ${imgUrl
-        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onload="this.closest('.card').classList.remove('shimmer-card')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.card').classList.remove('shimmer-card')">
+        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
            <div class="no-img" style="display:none">${noImgSvg}<span>Failed to load</span></div>`
         : `<div class="no-img">${noImgSvg}<span>No image available</span></div>`}
       ${photoCount > 0 ? `<div class="photo-badge">${cameraSvg} ${photoCount}</div>` : ""}
@@ -679,8 +673,8 @@ function renderGalleryTab() {
     .map((url, i) => {
       const proxied = proxyImageUrl(url);
       return `
-        <div class="gallery-thumb shimmer" onclick="openLightbox('${currentGalleryTab}', ${i})">
-          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onload="this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
+        <div class="gallery-thumb" onclick="openLightbox('${currentGalleryTab}', ${i})">
+          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="img-error-placeholder" style="display:none">${brokenSvg}<span>Load failed</span></div>
           <div class="thumb-overlay">${expandSvg}</div>
         </div>`;
@@ -864,8 +858,8 @@ function renderJobGallery(tab, jobIdx) {
     .map((url, i) => {
       const proxied = proxyImageUrl(url);
       return `
-        <div class="gallery-thumb shimmer" onclick="openJobLightbox(${jobIdx}, '${tab}', ${i})">
-          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onload="this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
+        <div class="gallery-thumb" onclick="openJobLightbox(${jobIdx}, '${tab}', ${i})">
+          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <div class="img-error-placeholder" style="display:none">${brokenSvg}<span>Load failed</span></div>
           <div class="thumb-overlay">${expandSvg}</div>
         </div>`;
