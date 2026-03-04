@@ -679,8 +679,8 @@ function renderGalleryTab() {
     .map((url, i) => {
       const proxied = proxyImageUrl(url);
       return `
-        <div class="gallery-thumb" onclick="openLightbox('${currentGalleryTab}', ${i})">
-          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-thumb shimmer" onclick="openLightbox('${currentGalleryTab}', ${i})">
+          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onload="this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
           <div class="img-error-placeholder" style="display:none">${brokenSvg}<span>Load failed</span></div>
           <div class="thumb-overlay">${expandSvg}</div>
         </div>`;
@@ -864,8 +864,8 @@ function renderJobGallery(tab, jobIdx) {
     .map((url, i) => {
       const proxied = proxyImageUrl(url);
       return `
-        <div class="gallery-thumb" onclick="openJobLightbox(${jobIdx}, '${tab}', ${i})">
-          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-thumb shimmer" onclick="openJobLightbox(${jobIdx}, '${tab}', ${i})">
+          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onload="this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
           <div class="img-error-placeholder" style="display:none">${brokenSvg}<span>Load failed</span></div>
           <div class="thumb-overlay">${expandSvg}</div>
         </div>`;
