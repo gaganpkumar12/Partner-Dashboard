@@ -476,7 +476,9 @@
     .partner-search-box {
       padding: 10px 12px; border: none; border-bottom: 1px solid var(--border);
       font-size: 13px; font-family: inherit; outline: none; background: var(--surface-hover);
+      color: var(--text-primary);
     }
+    .partner-search-box::placeholder { color: var(--text-muted); }
     .partner-dropdown-actions {
       display: flex; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border-light);
     }
@@ -536,10 +538,12 @@
     .search-input {
       padding: 8px 14px 8px 34px; border: 1px solid var(--border); border-radius: var(--radius-md);
       font-size: 13px; font-family: inherit; width: 200px; outline: none;
+      color: var(--text-primary);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       background: var(--surface-hover) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") 10px center no-repeat;
       backdrop-filter: blur(6px);
     }
+    .search-input::placeholder { color: var(--text-muted); }
     .search-input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(99,102,241,0.12), 0 4px 12px rgba(99,102,241,0.08);
