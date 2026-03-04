@@ -883,16 +883,14 @@
       0% { r: 0; stroke-opacity: 0.8; stroke-width: 2; }
       100% { r: 35; stroke-opacity: 0; stroke-width: 0.5; }
     }
-    /* Whole splash bright flash overlay */
-    .splash-flash {
-      position: absolute; inset: 0;
-      background: radial-gradient(circle at 80% 18%, rgba(66,165,245,0.6) 0%, transparent 60%);
-      opacity: 0; pointer-events: none;
-      animation: splashFlash 1s ease-out 1.7s forwards;
+    /* Star bright flash - inside SVG centered on star */
+    .splash-logo .star-flash {
+      opacity: 0;
+      animation: starFlash 1.2s ease-out 1.7s forwards;
     }
-    @keyframes splashFlash {
+    @keyframes starFlash {
       0% { opacity: 0; }
-      15% { opacity: 1; }
+      10% { opacity: 1; }
       100% { opacity: 0; }
     }
     /* Splash text */
@@ -1267,7 +1265,6 @@
   <!-- Loading -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="splash-container">
-      <div class="splash-flash"></div>
       <svg class="splash-logo" viewBox="0 0 100 100" fill="none">
         <defs>
           <linearGradient id="slg" x1="0.5" y1="0" x2="0.5" y2="1">
@@ -1285,8 +1282,12 @@
             <animate attributeName="x1" values="-30;120" dur="2.5s" repeatCount="indefinite"/>
             <animate attributeName="x2" values="20;170" dur="2.5s" repeatCount="indefinite"/>
           </linearGradient>
+          <radialGradient id="starFlashGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="white" stop-opacity="0.9"/>
+            <stop offset="30%" stop-color="#42A5F5" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#42A5F5" stop-opacity="0"/>
+          </radialGradient>
         </defs>
-        <!-- L-Frame -->
         <polyline class="s-frame" points="68,10 10,10 10,90" stroke="url(#slg)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
         <!-- House roof -->
         <polyline class="s-roof" points="20,58 50,30 80,58" stroke="url(#slg)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1305,6 +1306,8 @@
           <circle class="burst-circle"/>
           <circle class="burst-ring"/>
         </g>
+        <!-- Star bright flash glow -->
+        <circle class="star-flash" cx="80" cy="18" r="25" fill="url(#starFlashGrad)"/>
       </svg>
       <div class="splash-text">Partners <span class="admin-txt">Dashboard</span></div>
       <div class="splash-dots">
