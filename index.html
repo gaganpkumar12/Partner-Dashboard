@@ -140,7 +140,19 @@
       0%, 100% { filter: drop-shadow(0 0 2px rgba(66,165,245,0.4)); transform: scale(1); }
       50% { filter: drop-shadow(0 0 8px rgba(66,165,245,0.95)) brightness(1.4); transform: scale(1.25); }
     }
-    .logo h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+    .logo h1 {
+      font-size: 17px; font-weight: 700; letter-spacing: -0.3px;
+      background: linear-gradient(90deg, var(--text-primary) 0%, var(--text-primary) 40%, #42A5F5 50%, var(--text-primary) 60%, var(--text-primary) 100%);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: textShimmer 3s ease-in-out infinite;
+    }
+    @keyframes textShimmer {
+      0%, 100% { background-position: 100% 0; }
+      50% { background-position: -100% 0; }
+    }
     .total-badge {
       background: var(--accent-light); color: var(--accent);
       padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
