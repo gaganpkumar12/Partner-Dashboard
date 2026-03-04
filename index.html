@@ -697,17 +697,38 @@
       background: var(--card-img-gradient);
       position: relative; overflow: hidden;
     }
-    .card-image-wrapper.shimmer {
+    /* Full-card shimmer skeleton */
+    .card.shimmer-card .card-image-wrapper {
       background: var(--surface-hover);
     }
-    .card-image-wrapper.shimmer::after {
+    .card.shimmer-card .card-image-wrapper::after {
       content: ''; position: absolute; inset: 0;
       background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 75%, transparent 100%);
       animation: shimmer 1.5s ease-in-out infinite;
       z-index: 5;
     }
-    [data-theme="dark"] .card-image-wrapper.shimmer::after {
+    [data-theme="dark"] .card.shimmer-card .card-image-wrapper::after {
       background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.06) 75%, transparent 100%);
+    }
+    .card.shimmer-card .card-body { position: relative; overflow: hidden; }
+    .card.shimmer-card .card-body::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 25%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.12) 75%, transparent 100%);
+      animation: shimmer 1.5s ease-in-out infinite;
+      z-index: 5;
+    }
+    [data-theme="dark"] .card.shimmer-card .card-body::after {
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%, transparent 100%);
+    }
+    .card.shimmer-card .card-status-row,
+    .card.shimmer-card .card-details,
+    .card.shimmer-card .card-amount { visibility: hidden; }
+    .card.shimmer-card .card-body::before {
+      content: '';
+      display: block;
+      height: 12px; width: 60%; border-radius: 6px;
+      background: var(--surface-hover);
+      margin-bottom: 8px;
     }
     @keyframes shimmer {
       0% { transform: translateX(-100%); }

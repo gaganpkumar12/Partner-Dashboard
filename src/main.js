@@ -346,7 +346,6 @@ function createColumn(partnerName, records) {
   const body = col.querySelector(".column-body");
   records.forEach((record, idx) => {
     const card = createCard(record);
-    card.style.animationDelay = `${idx * 0.06}s`;
     body.appendChild(card);
   });
   return col;
@@ -388,7 +387,6 @@ function updateColumn(col, partnerName, records) {
       const frag = document.createDocumentFragment();
       records.forEach((record, idx) => {
         const card = createCard(record);
-        card.style.animationDelay = `${idx * 0.06}s`;
         frag.appendChild(card);
       });
       body.appendChild(frag);
@@ -431,7 +429,7 @@ function createCard(record) {
   wrapper.className = "card-glow-wrapper";
 
   const card = document.createElement("div");
-  card.className = "card";
+  card.className = imgUrl ? "card shimmer-card" : "card";
   card.onclick = () => showModal(record);
 
   const statusText = getStatusText(record);
@@ -469,9 +467,9 @@ function createCard(record) {
     <div class="glass-distortion-layer"></div>
     <div class="glass-tint-layer"></div>
     <div class="glass-specular-layer"></div>
-    <div class="card-image-wrapper${imgUrl ? ' shimmer' : ''}">
+    <div class="card-image-wrapper">
       ${imgUrl
-        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onload="this.parentElement.classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.parentElement.classList.remove('shimmer')">
+        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onload="this.closest('.card').classList.remove('shimmer-card')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.card').classList.remove('shimmer-card')">
            <div class="no-img" style="display:none">${noImgSvg}<span>Failed to load</span></div>`
         : `<div class="no-img">${noImgSvg}<span>No image available</span></div>`}
       ${photoCount > 0 ? `<div class="photo-badge">${cameraSvg} ${photoCount}</div>` : ""}
