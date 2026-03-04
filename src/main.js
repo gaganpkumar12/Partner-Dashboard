@@ -110,6 +110,7 @@ let selectedPartners = new Set(); // empty = all
 let partnerDropdownOpen = false;
 let pocDropdownOpen = false;
 let partnerStats = {}; // { partnerName: { bookings, reviews, estimates, photos, lunchVideos, eveningVideos, feedbackImages } }
+let globalJobsByBookingId = {}; // { bookingZohoId: [job, ...] }
 
 // ─── Lightbox State ───────────────────────────────────────────
 let lightboxImages = [];
@@ -157,6 +158,19 @@ function initSubscriptions() {
   client.onUpdate(api.bookings.getPartnerStats, {}, (data) => {
     if (!data) return;
     partnerStats = data;
+    scheduleRender();
+  });
+
+  // Subscribe to all jobs for card amount display
+  client.onUpdate(api.bookings.getAllJobs, {}, (allJobs) => {
+    if (!allJobs) return;
+    const map = {};
+    for (const job of allJobs) {
+      if (!job.bookingId) continue;
+      if (!map[job.bookingId]) map[job.bookingId] = [];
+      map[job.bookingId].push(job);
+    }
+    globalJobsByBookingId = map;
     scheduleRender();
   });
 
@@ -461,6 +475,21 @@ function createCard(record) {
         <span class="card-date">${dateStr}</span>
       </div>
       <div class="card-details">${info}</div>
+      ${(() => {
+        const jobs = globalJobsByBookingId[record.zohoId] || [];
+        let totalAmt = 0;
+        const modes = [];
+        jobs.forEach(j => {
+          const a = parseFloat(j.amount);
+          if (!isNaN(a)) totalAmt += a;
+          if (j.paymentMode && j.paymentMode.trim()) modes.push(j.paymentMode.trim());
+        });
+        if (totalAmt > 0) {
+          const modeStr = modes.length > 0 ? ` (${[...new Set(modes)].join(", ")})` : "";
+          return `<div class="card-amount">₹${totalAmt.toLocaleString("en-IN")}${modeStr}</div>`;
+        }
+        return "";
+      })()}
     </div>
   `;
 
