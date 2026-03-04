@@ -141,13 +141,25 @@
       50% { filter: drop-shadow(0 0 8px rgba(66,165,245,0.95)) brightness(1.4); transform: scale(1.25); }
     }
     .logo h1 {
-      font-size: 17px; font-weight: 700; letter-spacing: -0.3px;
-      background: linear-gradient(90deg, var(--text-primary) 0%, var(--text-primary) 40%, #42A5F5 50%, var(--text-primary) 60%, var(--text-primary) 100%);
-      background-size: 200% 100%;
+      font-size: 18px; font-weight: 800; letter-spacing: -0.5px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      position: relative;
+      background: linear-gradient(
+        90deg,
+        #42A5F5 0%, #26C6DA 15%, var(--text-primary) 30%,
+        var(--text-primary) 40%, rgba(255,255,255,0.9) 50%,
+        var(--text-primary) 60%, var(--text-primary) 70%,
+        #FFCA28 85%, #FF7043 100%
+      );
+      background-size: 250% 100%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      animation: textShimmer 3s ease-in-out infinite;
+      animation: textShimmer 4s ease-in-out infinite;
+    }
+    .logo h1 .admin-txt {
+      font-weight: 400; opacity: 0.85; letter-spacing: 0.5px;
+      font-size: 0.85em;
     }
     @keyframes textShimmer {
       0%, 100% { background-position: 100% 0; }
@@ -1312,7 +1324,7 @@
             <polygon class="star-el" points="80,8 82.1,15.5 90,18 82.1,20.5 80,28 77.9,20.5 70,18 77.9,15.5" fill="#42A5F5"/>
           </svg>
         </div>
-        <h1>Partners Admin</h1>
+        <h1>Partners <span class="admin-txt">Admin</span></h1>
       </div>
       <span class="total-badge" id="totalBadge">0 Bookings</span>
     </div>
