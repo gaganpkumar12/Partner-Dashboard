@@ -6,8 +6,8 @@ const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 const CONVEX_SITE_URL = import.meta.env.VITE_CONVEX_SITE_URL;
 
 if (!CONVEX_URL) {
-  document.getElementById("loadingText").textContent =
-    "Error: VITE_CONVEX_URL not set. Run: npx convex dev";
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.innerHTML = '<p style="color:var(--red);font-size:14px;font-weight:500;">Error: VITE_CONVEX_URL not set. Run: npx convex dev</p>';
   throw new Error("VITE_CONVEX_URL is not set");
 }
 
