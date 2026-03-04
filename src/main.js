@@ -463,7 +463,7 @@ function createCard(record) {
     <div class="glass-specular-layer"></div>
     <div class="card-image-wrapper${imgUrl ? ' shimmer' : ''}">
       ${imgUrl
-        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" onload="this.parentElement.classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.parentElement.classList.remove('shimmer')">
+        ? `<img src="${imgUrl}" alt="Booking" loading="lazy" style="transition:opacity 0.3s" onload="this.style.opacity='1';this.parentElement.classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.parentElement.classList.remove('shimmer')">
            <div class="no-img" style="display:none">${noImgSvg}<span>Failed to load</span></div>`
         : `<div class="no-img">${noImgSvg}<span>No image available</span></div>`}
       ${photoCount > 0 ? `<div class="photo-badge">${cameraSvg} ${photoCount}</div>` : ""}
@@ -674,7 +674,7 @@ function renderGalleryTab() {
       const proxied = proxyImageUrl(url);
       return `
         <div class="gallery-thumb shimmer" onclick="openLightbox('${currentGalleryTab}', ${i})">
-          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onload="this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
+          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" style="transition:opacity 0.3s" onload="this.style.opacity='1';this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
           <div class="img-error-placeholder" style="display:none">${brokenSvg}<span>Load failed</span></div>
           <div class="thumb-overlay">${expandSvg}</div>
         </div>`;
@@ -859,7 +859,7 @@ function renderJobGallery(tab, jobIdx) {
       const proxied = proxyImageUrl(url);
       return `
         <div class="gallery-thumb shimmer" onclick="openJobLightbox(${jobIdx}, '${tab}', ${i})">
-          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" onload="this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
+          <img src="${proxied}" alt="Photo ${i + 1}" loading="lazy" style="transition:opacity 0.3s" onload="this.style.opacity='1';this.closest('.gallery-thumb').classList.remove('shimmer')" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';this.closest('.gallery-thumb').classList.remove('shimmer')">
           <div class="img-error-placeholder" style="display:none">${brokenSvg}<span>Load failed</span></div>
           <div class="thumb-overlay">${expandSvg}</div>
         </div>`;
