@@ -697,14 +697,17 @@
       background: var(--card-img-gradient);
       position: relative; overflow: hidden;
     }
+    .card-image-wrapper.shimmer {
+      background: var(--surface-hover);
+    }
     .card-image-wrapper.shimmer::after {
       content: ''; position: absolute; inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 20%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.08) 80%, transparent 100%);
-      animation: shimmer 1.8s ease-in-out infinite;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 75%, transparent 100%);
+      animation: shimmer 1.5s ease-in-out infinite;
       z-index: 5;
     }
     [data-theme="dark"] .card-image-wrapper.shimmer::after {
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 20%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 80%, transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.06) 75%, transparent 100%);
     }
     @keyframes shimmer {
       0% { transform: translateX(-100%); }

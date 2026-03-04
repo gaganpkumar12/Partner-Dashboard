@@ -344,7 +344,11 @@ function createColumn(partnerName, records) {
   `;
 
   const body = col.querySelector(".column-body");
-  records.forEach((record) => body.appendChild(createCard(record)));
+  records.forEach((record, idx) => {
+    const card = createCard(record);
+    card.style.animationDelay = `${idx * 0.06}s`;
+    body.appendChild(card);
+  });
   return col;
 }
 
@@ -382,7 +386,11 @@ function updateColumn(col, partnerName, records) {
       body.innerHTML = `<div class="no-records"><svg viewBox="0 0 24 24"><path d="M20 6H12L10 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z"/></svg>No bookings</div>`;
     } else {
       const frag = document.createDocumentFragment();
-      records.forEach((record) => frag.appendChild(createCard(record)));
+      records.forEach((record, idx) => {
+        const card = createCard(record);
+        card.style.animationDelay = `${idx * 0.06}s`;
+        frag.appendChild(card);
+      });
       body.appendChild(frag);
     }
   }
