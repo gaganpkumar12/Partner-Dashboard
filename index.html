@@ -92,25 +92,53 @@
     .logo { display: flex; align-items: center; gap: 10px; }
     .logo-icon {
       width: 38px; height: 38px;
-      background: linear-gradient(135deg, var(--accent), #818cf8, #a78bfa);
-      border-radius: var(--radius-md); display: flex; align-items: center;
-      justify-content: center; color: #fff;
-      box-shadow: 0 4px 15px rgba(99,102,241,0.3);
-      animation: logoFloat 3s ease-in-out infinite;
-      position: relative; overflow: hidden;
+      display: flex; align-items: center;
+      justify-content: center;
+      position: relative; overflow: visible;
     }
-    .logo-icon::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%);
-      animation: logoShine 4s ease-in-out infinite;
+    .logo-svg { width: 100%; height: 100%; }
+    /* Dash-in: frame */
+    .logo-svg .dash-frame {
+      stroke-dasharray: 150;
+      stroke-dashoffset: 150;
+      animation: logoDash 1.2s ease-out 0.1s forwards;
     }
-    @keyframes logoShine {
-      0%, 100% { transform: translateX(-100%); }
-      50% { transform: translateX(100%); }
+    /* Dash-in: roof */
+    .logo-svg .dash-roof {
+      stroke-dasharray: 140;
+      stroke-dashoffset: 140;
+      animation: logoDash 0.9s ease-out 0.5s forwards;
     }
-    @keyframes logoFloat {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-2px) rotate(1deg); }
+    /* Dash-in: base */
+    .logo-svg .dash-base {
+      stroke-dasharray: 110;
+      stroke-dashoffset: 110;
+      animation: logoDash 0.8s ease-out 0.9s forwards;
+    }
+    @keyframes logoDash {
+      to { stroke-dashoffset: 0; }
+    }
+    /* Shimmer overlay (fades in after dash-in) */
+    .logo-svg .shimmer-ol {
+      opacity: 0;
+      animation: shimOlIn 0.4s ease 1.8s forwards;
+    }
+    @keyframes shimOlIn { to { opacity: 1; } }
+    /* Star pop-in + looping shine */
+    .logo-svg .star-el {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: starPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.4s forwards,
+                 starShine 2s ease-in-out 2s infinite;
+    }
+    @keyframes starPop {
+      0% { opacity: 0; transform: scale(0) rotate(-60deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes starShine {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(66,165,245,0.4)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 8px rgba(66,165,245,0.95)) brightness(1.4); transform: scale(1.25); }
     }
     .logo h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
     .total-badge {
@@ -1122,7 +1150,7 @@
       .search-input { width: 100%; flex: 1; min-width: 0; }
       .btn { padding: 8px 12px; font-size: 12px; }
       .logo h1 { font-size: 15px; }
-      .logo-icon { width: 30px; height: 30px; font-size: 15px; }
+      .logo-icon { width: 30px; height: 30px; }
       .total-badge { font-size: 11px; padding: 4px 10px; }
 
       .filter-bar {
@@ -1251,10 +1279,38 @@
     <div class="top-bar-left">
       <div class="logo">
         <div class="logo-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+          <svg class="logo-svg" viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="lg" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" stop-color="#42A5F5"/>
+                <stop offset="25%" stop-color="#26C6DA"/>
+                <stop offset="50%" stop-color="#66BB6A"/>
+                <stop offset="75%" stop-color="#FFCA28"/>
+                <stop offset="100%" stop-color="#FF7043"/>
+              </linearGradient>
+              <linearGradient id="sg" gradientUnits="userSpaceOnUse" x1="-30" y1="0" x2="20" y2="0">
+                <stop offset="0%" stop-color="white" stop-opacity="0"/>
+                <stop offset="45%" stop-color="white" stop-opacity="0.45"/>
+                <stop offset="55%" stop-color="white" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="white" stop-opacity="0"/>
+                <animate attributeName="x1" values="-30;120" dur="2.5s" repeatCount="indefinite"/>
+                <animate attributeName="x2" values="20;170" dur="2.5s" repeatCount="indefinite"/>
+              </linearGradient>
+            </defs>
+            <!-- L-Frame -->
+            <polyline class="dash-frame" points="68,10 10,10 10,90" stroke="url(#lg)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- House roof -->
+            <polyline class="dash-roof" points="20,58 50,30 80,58" stroke="url(#lg)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- House base -->
+            <path class="dash-base" d="M32,90 V72 H68 V90" stroke="url(#lg)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Shimmer overlay -->
+            <g class="shimmer-ol">
+              <polyline points="68,10 10,10 10,90" stroke="url(#sg)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="20,58 50,30 80,58" stroke="url(#sg)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M32,90 V72 H68 V90" stroke="url(#sg)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <!-- 4-pointed star sparkle -->
+            <polygon class="star-el" points="80,8 82.1,15.5 90,18 82.1,20.5 80,28 77.9,20.5 70,18 77.9,15.5" fill="#42A5F5"/>
           </svg>
         </div>
         <h1>Partners Admin</h1>
