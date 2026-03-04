@@ -6,7 +6,7 @@
   <title>Partners Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* Animatable CSS custom properties for gradient buttons */
     @property --gbtn-pos-x { syntax: '<percentage>'; initial-value: 11.14%; inherits: false; }
@@ -141,8 +141,8 @@
       50% { filter: drop-shadow(0 0 8px rgba(66,165,245,0.95)) brightness(1.4); transform: scale(1.25); }
     }
     .logo h1 {
-      font-size: 18px; font-weight: 800; letter-spacing: -0.5px;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 19px; font-weight: 700; letter-spacing: -0.3px;
+      font-family: 'Playfair Display', Georgia, serif;
       position: relative;
       background: linear-gradient(
         90deg,
@@ -159,7 +159,7 @@
     }
     .logo h1 .admin-txt {
       font-weight: 400; letter-spacing: 0.5px;
-      font-size: 0.85em;
+      font-size: 0.88em;
       -webkit-text-fill-color: transparent;
     }
     @keyframes textShimmer {
@@ -896,26 +896,41 @@
     }
     /* Splash text */
     .splash-text {
-      font-size: 30px; font-weight: 800; letter-spacing: -0.5px;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      display: flex; gap: 0; align-items: baseline;
+      font-size: 34px; font-weight: 700; letter-spacing: -0.3px;
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+    .splash-text .letter {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px) scale(0.8);
+      animation: letterPop 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
       background: linear-gradient(
         90deg,
-        #42A5F5 0%, #26C6DA 15%, var(--text-primary) 30%,
-        var(--text-primary) 40%, rgba(255,255,255,0.9) 50%,
-        var(--text-primary) 60%, var(--text-primary) 70%,
-        #FFCA28 85%, #FF7043 100%
+        #42A5F5 0%, #26C6DA 20%, var(--text-primary) 40%,
+        var(--text-primary) 50%, rgba(255,255,255,0.9) 55%,
+        var(--text-primary) 60%, #FFCA28 80%, #FF7043 100%
       );
-      background-size: 250% 100%;
+      background-size: 300% 100%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      opacity: 0;
-      animation: splashTextIn 0.6s ease 1.2s forwards, splashTextShimmer 2.5s ease-in-out 1.8s infinite;
+      animation: letterPop 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards,
+                 letterShimmer 3s ease-in-out 2.5s infinite;
     }
+    .splash-text .space { width: 10px; }
     .splash-text .admin-txt {
       font-weight: 400; letter-spacing: 0.5px;
-      font-size: 0.85em;
-      -webkit-text-fill-color: transparent;
+      font-size: 0.88em;
+    }
+    @keyframes letterPop {
+      0% { opacity: 0; transform: translateY(20px) scale(0.8) rotate(-5deg); }
+      60% { opacity: 1; transform: translateY(-4px) scale(1.05) rotate(1deg); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+    }
+    @keyframes letterShimmer {
+      0%, 100% { background-position: 100% 0; }
+      50% { background-position: -100% 0; }
     }
     @keyframes splashTextIn {
       0% { opacity: 0; transform: translateY(12px); }
@@ -1311,7 +1326,7 @@
         <!-- Star bright flash glow -->
         <circle class="star-flash" cx="80" cy="18" r="25" fill="url(#starFlashGrad)"/>
       </svg>
-      <div class="splash-text">Partners <span class="admin-txt">Admin</span></div>
+      <div class="splash-text" id="splashText"></div>
       <div class="splash-dots">
         <span></span><span></span><span></span>
       </div>
@@ -1476,5 +1491,32 @@
   </div>
 
   <script type="module" src="/src/main.js"></script>
+  <script>
+    // Splash text letter-by-letter animation
+    (function() {
+      const el = document.getElementById('splashText');
+      if (!el) return;
+      const words = [{text: 'Partners', cls: ''}, {text: 'Admin', cls: 'admin-txt'}];
+      let delay = 1.3; // seconds, start after logo begins drawing
+      words.forEach((w, wi) => {
+        if (wi > 0) {
+          const sp = document.createElement('span');
+          sp.className = 'space';
+          el.appendChild(sp);
+        }
+        const wrap = document.createElement('span');
+        if (w.cls) wrap.className = w.cls;
+        w.text.split('').forEach((ch) => {
+          const letter = document.createElement('span');
+          letter.className = 'letter';
+          letter.textContent = ch;
+          letter.style.animationDelay = delay + 's, 2.5s';
+          delay += 0.06;
+          wrap.appendChild(letter);
+        });
+        el.appendChild(wrap);
+      });
+    })();
+  </script>
 </body>
 </html>
