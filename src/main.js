@@ -1,6 +1,8 @@
 import { ConvexClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
 
+window.__splashStart = performance.now();
+
 // ─── Convex Client ────────────────────────────────────────────
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 const CONVEX_SITE_URL = import.meta.env.VITE_CONVEX_SITE_URL;
@@ -146,7 +148,12 @@ function initSubscriptions() {
     document.getElementById("statusText").textContent =
       `Live | ${new Date().toLocaleTimeString()}`;
     document.getElementById("statusText").className = "status-dot success";
-    document.getElementById("loadingOverlay").classList.add("hidden");
+    // Minimum 3s splash screen
+    const now = performance.now();
+    const splashMin = window.__splashStart ? Math.max(0, 3000 - (now - window.__splashStart)) : 0;
+    setTimeout(() => {
+      document.getElementById("loadingOverlay").classList.add("hidden");
+    }, splashMin);
     document.getElementById("refreshBtn").disabled = false;
 
     buildPartnerDropdown();
