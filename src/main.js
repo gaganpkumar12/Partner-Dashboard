@@ -1213,6 +1213,7 @@ window.exportCSV = async function () {
     const headers = [
       "Partner Name",
       "Count of Bookings",
+      "Total Amount (Payment Mode)",
       "Count of Review Photos",
       "Count of Estimate",
       "Count of Reach Selfie",
@@ -1229,6 +1230,7 @@ window.exportCSV = async function () {
     let totalBookings = 0, totalReviews = 0, totalEstimates = 0;
     let totalReachSelfie = 0, totalBeforePhoto = 0, totalAfterPhoto = 0;
     let totalLunch = 0, totalEvening = 0, totalFeedback = 0, totalWorkFinished = 0;
+    let grandTotalAmount = 0;
 
     filteredPartners.forEach((partner) => {
       let records = allData[partner] || [];
@@ -1247,6 +1249,8 @@ window.exportCSV = async function () {
           return true;
         });
       }
+      // Exclude cancelled bookings from the count
+      records = records.filter((r) => getStatusClass(r) !== "work-cancelled");
       if (records.length === 0) return;
 
       let countBookings = records.length;
@@ -1275,15 +1279,29 @@ window.exportCSV = async function () {
 
       let countReviews = 0, countEstimates = 0, countAfterPhoto = 0;
       let countEvening = 0, countFeedback = 0;
+      let partnerAmount = 0;
+      const paymentModes = {};
       partnerJobs.forEach((job) => {
         if (job.googleReviewPhotos && job.googleReviewPhotos.length > 0) countReviews++;
         if (job.amount && job.amount.trim() !== "" && job.amount !== "0") countEstimates++;
         if (job.afterPhotos && job.afterPhotos.length > 0) countAfterPhoto++;
         if (job.eveningCheckoutVideo) countEvening++;
         if (job.feedbackImages && job.feedbackImages.length > 0) countFeedback++;
+        // Accumulate amount and payment mode
+        const amt = parseFloat(job.amount);
+        if (!isNaN(amt)) partnerAmount += amt;
+        if (job.paymentMode && job.paymentMode.trim() !== "") {
+          const mode = job.paymentMode.trim();
+          paymentModes[mode] = (paymentModes[mode] || 0) + 1;
+        }
       });
+      const modesStr = Object.keys(paymentModes).length > 0
+        ? " (" + Object.entries(paymentModes).map(([m, c]) => c > 1 ? `${m} x${c}` : m).join(", ") + ")"
+        : "";
+      const amountDisplay = partnerAmount > 0 ? partnerAmount.toFixed(2) + modesStr : "0";
 
       totalBookings += countBookings;
+      grandTotalAmount += partnerAmount;
       totalReviews += countReviews;
       totalEstimates += countEstimates;
       totalReachSelfie += countReachSelfie;
@@ -1294,11 +1312,11 @@ window.exportCSV = async function () {
       totalFeedback += countFeedback;
       totalWorkFinished += countWorkFinished;
 
-      csv += [partner, countBookings, countReviews, countEstimates, countReachSelfie, countBeforePhoto, countAfterPhoto, countLunchVideo, countEvening, countFeedback, countWorkFinished].map(escapeCSV).join(",") + "\n";
+      csv += [partner, countBookings, amountDisplay, countReviews, countEstimates, countReachSelfie, countBeforePhoto, countAfterPhoto, countLunchVideo, countEvening, countFeedback, countWorkFinished].map(escapeCSV).join(",") + "\n";
     });
 
     // Grand Total row
-    csv += ["Grand Total", totalBookings, totalReviews, totalEstimates, totalReachSelfie, totalBeforePhoto, totalAfterPhoto, totalLunch, totalEvening, totalFeedback, totalWorkFinished].map(escapeCSV).join(",") + "\n";
+    csv += ["Grand Total", totalBookings, grandTotalAmount > 0 ? grandTotalAmount.toFixed(2) : "0", totalReviews, totalEstimates, totalReachSelfie, totalBeforePhoto, totalAfterPhoto, totalLunch, totalEvening, totalFeedback, totalWorkFinished].map(escapeCSV).join(",") + "\n";
 
     // Download
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
