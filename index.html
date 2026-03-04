@@ -6,7 +6,8 @@
   <title>Partners Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-grotesk@200,300,400,500,600,700&display=swap" rel="stylesheet">
   <style>
     /* Animatable CSS custom properties for gradient buttons */
     @property --gbtn-pos-x { syntax: '<percentage>'; initial-value: 11.14%; inherits: false; }
@@ -141,8 +142,9 @@
       50% { filter: drop-shadow(0 0 8px rgba(66,165,245,0.95)) brightness(1.4); transform: scale(1.25); }
     }
     .logo h1 {
-      font-size: 19px; font-weight: 700; letter-spacing: -0.3px;
-      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px; font-weight: 400; letter-spacing: 1.5px;
+      font-family: 'Bebas Neue', 'Arial Narrow', sans-serif;
+      text-transform: uppercase;
       position: relative;
       background: linear-gradient(
         90deg,
@@ -158,8 +160,7 @@
       animation: textShimmer 4s ease-in-out infinite;
     }
     .logo h1 .admin-txt {
-      font-weight: 400; letter-spacing: 0.5px;
-      font-size: 0.88em;
+      letter-spacing: 1.5px;
       -webkit-text-fill-color: transparent;
     }
     @keyframes textShimmer {
@@ -897,14 +898,13 @@
     /* Splash text */
     .splash-text {
       display: flex; gap: 0; align-items: baseline;
-      font-size: 34px; font-weight: 700; letter-spacing: -0.3px;
-      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 36px; font-weight: 600; letter-spacing: -0.5px;
+      font-family: 'Clash Grotesk', 'Inter', sans-serif;
     }
     .splash-text .letter {
       display: inline-block;
       opacity: 0;
       transform: translateY(20px) scale(0.8);
-      animation: letterPop 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
       background: linear-gradient(
         90deg,
         #42A5F5 0%, #26C6DA 20%, var(--text-primary) 40%,
@@ -920,7 +920,7 @@
     }
     .splash-text .space { width: 10px; }
     .splash-text .admin-txt {
-      font-weight: 400; letter-spacing: 0.5px;
+      font-weight: 300; letter-spacing: 0.5px;
       font-size: 0.88em;
     }
     @keyframes letterPop {
