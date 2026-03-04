@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Partners Dashboard</title>
+  <title>Partners Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -158,8 +158,9 @@
       animation: textShimmer 4s ease-in-out infinite;
     }
     .logo h1 .admin-txt {
-      font-weight: 400; opacity: 0.85; letter-spacing: 0.5px;
+      font-weight: 400; letter-spacing: 0.5px;
       font-size: 0.85em;
+      -webkit-text-fill-color: transparent;
     }
     @keyframes textShimmer {
       0%, 100% { background-position: 100% 0; }
@@ -912,8 +913,9 @@
       animation: splashTextIn 0.6s ease 1.2s forwards, splashTextShimmer 2.5s ease-in-out 1.8s infinite;
     }
     .splash-text .admin-txt {
-      font-weight: 400; opacity: 0.85; letter-spacing: 0.5px;
+      font-weight: 400; letter-spacing: 0.5px;
       font-size: 0.85em;
+      -webkit-text-fill-color: transparent;
     }
     @keyframes splashTextIn {
       0% { opacity: 0; transform: translateY(12px); }
@@ -1309,7 +1311,7 @@
         <!-- Star bright flash glow -->
         <circle class="star-flash" cx="80" cy="18" r="25" fill="url(#starFlashGrad)"/>
       </svg>
-      <div class="splash-text">Partners <span class="admin-txt">Dashboard</span></div>
+      <div class="splash-text">Partners <span class="admin-txt">Admin</span></div>
       <div class="splash-dots">
         <span></span><span></span><span></span>
       </div>
@@ -1380,7 +1382,7 @@
             <polygon class="star-el" points="80,8 82.1,15.5 90,18 82.1,20.5 80,28 77.9,20.5 70,18 77.9,15.5" fill="#42A5F5"/>
           </svg>
         </div>
-        <h1>Partners <span class="admin-txt">Dashboard</span></h1>
+        <h1>Partners <span class="admin-txt">Admin</span></h1>
       </div>
       <span class="total-badge" id="totalBadge">0 Bookings</span>
     </div>
