@@ -271,6 +271,13 @@ function renderBoard() {
       });
     }
 
+    // Sort by addedTime descending (latest on top)
+    records.sort((a, b) => {
+      const tA = a.addedTime ? new Date(a.addedTime).getTime() : 0;
+      const tB = b.addedTime ? new Date(b.addedTime).getTime() : 0;
+      return tB - tA;
+    });
+
     desiredColumns.set(partner, records);
   });
 

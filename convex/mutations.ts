@@ -135,6 +135,37 @@ export const clearAllBookings = internalMutation({
   },
 });
 
+// Clear all bookings and jobs for a specific partner (for profile reset)
+export const clearPartnerData = internalMutation({
+  args: { partnerName: v.string() },
+  handler: async (ctx, args) => {
+    // Delete bookings for this partner
+    const bookings = await ctx.db
+      .query("bookings")
+      .withIndex("by_partner", (q) => q.eq("partnerName", args.partnerName))
+      .collect();
+    const bookingZohoIds = new Set(bookings.map((b) => b.zohoId));
+    for (const booking of bookings) {
+      await ctx.db.delete(booking._id);
+    }
+
+    // Delete jobs linked to those bookings
+    let jobsDeleted = 0;
+    const allJobs = await ctx.db.query("jobs").collect();
+    for (const job of allJobs) {
+      if (
+        bookingZohoIds.has(job.bookingId) ||
+        job.portalUsers.trim().toLowerCase() === args.partnerName.toLowerCase()
+      ) {
+        await ctx.db.delete(job._id);
+        jobsDeleted++;
+      }
+    }
+
+    return { bookingsDeleted: bookings.length, jobsDeleted };
+  },
+});
+
 // ─── Jobs Mutations ───────────────────────────────────────────
 
 // Batch upsert job records
