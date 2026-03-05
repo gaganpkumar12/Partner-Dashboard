@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="lg" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#42A5F5"/>
+      <stop offset="25%" stop-color="#26C6DA"/>
+      <stop offset="50%" stop-color="#66BB6A"/>
+      <stop offset="75%" stop-color="#FFCA28"/>
+      <stop offset="100%" stop-color="#FF7043"/>
+    </linearGradient>
+  </defs>
+  <!-- L-Frame -->
+  <polyline points="68,10 10,10 10,90" stroke="url(#lg)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- House roof -->
+  <polyline points="20,58 50,30 80,58" stroke="url(#lg)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- House base -->
+  <path d="M32,90 V72 H68 V90" stroke="url(#lg)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Star sparkle -->
+  <polygon points="80,8 82.1,15.5 90,18 82.1,20.5 80,28 77.9,20.5 70,18 77.9,15.5" fill="#42A5F5"/>
+</svg>
