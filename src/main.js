@@ -388,8 +388,8 @@ function updateColumn(col, partnerName, records) {
     if (newStats) header.appendChild(newStats);
   }
 
-  // If records count changed, rebuild body (fast path: skip if identical count)
-  if (prevCount !== records.length) {
+  // Always rebuild body to ensure correct sort order and fresh data
+  {
     const body = col.querySelector(".column-body");
     body.textContent = "";
     if (records.length === 0) {
