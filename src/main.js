@@ -178,7 +178,7 @@ function initSubscriptions() {
     setTimeout(() => {
       document.getElementById("loadingOverlay").classList.add("hidden");
     }, splashMin);
-    document.getElementById("refreshBtn").disabled = false;
+    updateSyncBtn();
 
     buildPartnerDropdown();
     buildPOCDropdown();
@@ -209,20 +209,65 @@ function initSubscriptions() {
   });
 }
 
+// ─── Sync Rate Limit (2 per day) ─────────────────────────────
+const SYNC_LIMIT = 2;
+const SYNC_KEY  = "syncUsage";
+
+function getSyncUsage() {
+  try {
+    const raw = localStorage.getItem(SYNC_KEY);
+    if (!raw) return { date: "", count: 0 };
+    return JSON.parse(raw);
+  } catch { return { date: "", count: 0 }; }
+}
+
+function recordSync() {
+  const today = new Date().toDateString();
+  localStorage.setItem(SYNC_KEY, JSON.stringify({ date: today, count: getSyncsUsedToday() + 1 }));
+}
+
+function getSyncsUsedToday() {
+  const { date, count } = getSyncUsage();
+  return date === new Date().toDateString() ? count : 0;
+}
+
+function updateSyncBtn() {
+  const btn = document.getElementById("refreshBtn");
+  if (!btn) return;
+  const used = getSyncsUsedToday();
+  const remaining = SYNC_LIMIT - used;
+  if (remaining <= 0) {
+    btn.disabled = true;
+    btn.title = "Daily sync limit reached (2/2). Resets at midnight.";
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg> Sync (0 left)`;
+  } else {
+    btn.disabled = false;
+    btn.title = `${remaining} sync${remaining === 1 ? "" : "s"} remaining today`;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg> Sync (${remaining} left)`;
+  }
+}
+
 // ─── Trigger Sync ─────────────────────────────────────────────
 window.triggerSync = async function () {
+  if (getSyncsUsedToday() >= SYNC_LIMIT) {
+    alert(`Daily sync limit reached (${SYNC_LIMIT}/day). Resets at midnight.`);
+    return;
+  }
   const btn = document.getElementById("refreshBtn");
   btn.disabled = true;
   btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin .7s linear infinite"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg> Syncing...`;
   try {
     const result = await client.action(api.zohoSync.syncFromZoho, {});
-    if (!result.success) alert("Sync failed: " + result.error);
-    else fetchSecondaryData(); // refresh stats + jobs after sync
+    if (!result.success) {
+      alert("Sync failed: " + result.error);
+    } else {
+      recordSync();
+      fetchSecondaryData();
+    }
   } catch (err) {
     alert("Sync error: " + err.message);
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg> Sync`;
+    updateSyncBtn();
   }
 };
 
