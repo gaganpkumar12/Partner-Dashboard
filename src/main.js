@@ -128,8 +128,32 @@ function scheduleRender() {
   });
 }
 
+// ─── One-time fetch for expensive queries (avoids re-running on every write) ──
+async function fetchSecondaryData() {
+  try {
+    const [stats, allJobs] = await Promise.all([
+      client.query(api.bookings.getPartnerStats, {}),
+      client.query(api.bookings.getAllJobs, {}),
+    ]);
+    if (stats) { partnerStats = stats; }
+    if (allJobs) {
+      const map = {};
+      for (const job of allJobs) {
+        if (!job.bookingId) continue;
+        if (!map[job.bookingId]) map[job.bookingId] = [];
+        map[job.bookingId].push(job);
+      }
+      globalJobsByBookingId = map;
+    }
+    scheduleRender();
+  } catch (e) {
+    console.warn("[fetchSecondaryData] failed:", e);
+  }
+}
+
 // ─── Subscriptions ────────────────────────────────────────────
 function initSubscriptions() {
+  let initialLoadDone = false;
   client.onUpdate(api.bookings.getBookingsGrouped, {}, (data) => {
     if (!data) return;
 
@@ -159,26 +183,12 @@ function initSubscriptions() {
     buildPartnerDropdown();
     buildPOCDropdown();
     scheduleRender();
-  });
 
-  // Subscribe to partner stats
-  client.onUpdate(api.bookings.getPartnerStats, {}, (data) => {
-    if (!data) return;
-    partnerStats = data;
-    scheduleRender();
-  });
-
-  // Subscribe to all jobs for card amount display
-  client.onUpdate(api.bookings.getAllJobs, {}, (allJobs) => {
-    if (!allJobs) return;
-    const map = {};
-    for (const job of allJobs) {
-      if (!job.bookingId) continue;
-      if (!map[job.bookingId]) map[job.bookingId] = [];
-      map[job.bookingId].push(job);
+    // Fetch stats + jobs once on initial load (not reactive — avoids re-running on every write)
+    if (!initialLoadDone) {
+      initialLoadDone = true;
+      fetchSecondaryData();
     }
-    globalJobsByBookingId = map;
-    scheduleRender();
   });
 
   client.onUpdate(api.bookings.getSyncStatus, {}, (status) => {
@@ -207,6 +217,7 @@ window.triggerSync = async function () {
   try {
     const result = await client.action(api.zohoSync.syncFromZoho, {});
     if (!result.success) alert("Sync failed: " + result.error);
+    else fetchSecondaryData(); // refresh stats + jobs after sync
   } catch (err) {
     alert("Sync error: " + err.message);
   } finally {

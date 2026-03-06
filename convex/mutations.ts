@@ -1,6 +1,23 @@
 import { mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
+// ─── Clear ALL data from every table ─────────────────────────
+export const clearAllData = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const tables = ["bookings", "jobs", "syncStatus", "tokenCache"] as const;
+    let total = 0;
+    for (const table of tables) {
+      const rows = await ctx.db.query(table).collect();
+      for (const row of rows) {
+        await ctx.db.delete(row._id);
+        total++;
+      }
+    }
+    return { deleted: total };
+  },
+});
+
 // Upsert a single booking record
 export const upsertBooking = internalMutation({
   args: {
