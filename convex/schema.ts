@@ -56,4 +56,10 @@ export default defineSchema({
     accessToken: v.string(),
     expiresAt: v.number(),  // timestamp ms
   }),
+
+  // Server-enforced daily sync quota (2 manual syncs per day)
+  syncQuota: defineTable({
+    date: v.string(),       // "YYYY-MM-DD" in IST (UTC+5:30)
+    count: v.number(),      // manual syncs used today
+  }).index("by_date", ["date"]),
 });

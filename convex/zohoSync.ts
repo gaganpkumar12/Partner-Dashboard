@@ -1,6 +1,7 @@
 import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { internal } from "./_generated/api";
+import { v } from "convex/values";
 
 // Zoho Creator API configuration
 const ZOHO_CONFIG = {
@@ -168,10 +169,21 @@ async function fetchAllRecordsFromZoho(accessToken: string): Promise<any[]> {
 
 // ─── Main sync action ───────────────────────────────────────────
 // This action fetches all records from Zoho and stores them in Convex DB
+// scheduled: true = called from cron (bypasses user quota)
 export const syncFromZoho = action({
-  args: {},
-  handler: async (ctx) => {
-    console.log("[Sync] Starting Zoho sync...");
+  args: { scheduled: v.optional(v.boolean()) },
+  handler: async (ctx, args) => {
+    const isScheduled = args.scheduled === true;
+    console.log(`[Sync] Starting Zoho sync... (${isScheduled ? "scheduled" : "manual"})`);
+
+    // ── Server-side quota check for manual syncs ──────────────
+    if (!isScheduled) {
+      try {
+        await ctx.runMutation(internal.mutations.checkAndIncrementSyncQuota, {});
+      } catch (quotaErr: any) {
+        return { success: false, error: quotaErr.message, quotaExceeded: true };
+      }
+    }
 
     // Mark sync as in progress
     await ctx.runMutation(internal.mutations.updateSyncStatus, {

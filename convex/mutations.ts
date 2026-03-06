@@ -286,3 +286,49 @@ export const setCachedToken = internalMutation({
     });
   },
 });
+
+// ─── Sync Quota (server-enforced 2/day) ───────────────────────
+
+// Returns today's date string in IST (UTC+5:30)
+function todayIST(): string {
+  const now = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+  return now.toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+const DAILY_SYNC_LIMIT = 2;
+
+// Get current quota for today (public query — used by client)
+export const getSyncQuota = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const today = todayIST();
+    const row = await ctx.db
+      .query("syncQuota")
+      .withIndex("by_date", (q) => q.eq("date", today))
+      .first();
+    const used = row?.count ?? 0;
+    return { used, remaining: Math.max(0, DAILY_SYNC_LIMIT - used), limit: DAILY_SYNC_LIMIT };
+  },
+});
+
+// Attempt to consume one quota slot — throws if limit reached
+export const checkAndIncrementSyncQuota = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const today = todayIST();
+    const row = await ctx.db
+      .query("syncQuota")
+      .withIndex("by_date", (q) => q.eq("date", today))
+      .first();
+    const used = row?.count ?? 0;
+    if (used >= DAILY_SYNC_LIMIT) {
+      throw new Error(`Daily sync limit reached (${DAILY_SYNC_LIMIT}/day). Resets at midnight IST.`);
+    }
+    if (row) {
+      await ctx.db.patch(row._id, { count: used + 1 });
+    } else {
+      await ctx.db.insert("syncQuota", { date: today, count: 1 });
+    }
+    return { used: used + 1, remaining: DAILY_SYNC_LIMIT - (used + 1) };
+  },
+});
