@@ -9,6 +9,7 @@
  */
 
 import type * as bookings from "../bookings.js";
+import type * as crons from "../crons.js";
 import type * as debug from "../debug.js";
 import type * as http from "../http.js";
 import type * as mutations from "../mutations.js";
@@ -22,6 +23,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   bookings: typeof bookings;
+  crons: typeof crons;
   debug: typeof debug;
   http: typeof http;
   mutations: typeof mutations;
