@@ -124,7 +124,7 @@ function parseRecord(record: any) {
 async function fetchAllRecordsFromZoho(accessToken: string): Promise<any[]> {
   const baseUrl = `https://creator.zoho${ZOHO_CONFIG.region}/api/v2/${ZOHO_CONFIG.ownerName}/${ZOHO_CONFIG.appLinkName}/report/${ZOHO_CONFIG.reportLinkName}`;
 
-  const MAX_RECORDS = 1000;
+  const MAX_RECORDS = 10000;
   let allRecords: any[] = [];
   let from = 0;
   const limit = 200;
@@ -295,7 +295,7 @@ function parseJobRecord(record: any) {
 async function fetchAllJobsFromZoho(accessToken: string): Promise<any[]> {
   const baseUrl = `${ZOHO_CREATOR_BASE}/api/v2/${ZOHO_CONFIG.ownerName}/${ZOHO_CONFIG.appLinkName}/report/${JOBS_REPORT}`;
 
-  const MAX_RECORDS = 1000;
+  const MAX_RECORDS = 10000;
   let allRecords: any[] = [];
   let from = 0;
   const limit = 200;
